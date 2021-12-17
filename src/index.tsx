@@ -185,6 +185,7 @@ import './themes/ang';
 import './themes/cxd';
 import './themes/dark';
 import './themes/antd';
+import './themes/smile';
 import {
   registerFilter,
   filterDate,

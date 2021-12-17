@@ -62,6 +62,11 @@ const themes = [
     label: 'Dark',
     ns: 'dark-',
     value: 'dark'
+  },
+  {
+    label: 'Smile',
+    ns: 'smile-',
+    value: 'smile'
   }
 ];
 
