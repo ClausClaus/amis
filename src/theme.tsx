@@ -90,7 +90,7 @@ export function getClassPrefix() {
 }
 
 export function getTheme(theme: string): ThemeInstance {
-  const config = themes[theme || 'cxd'];
+  const config = themes[theme || 'smile'];
 
   if (!config.getRendererConfig) {
     config.getRendererConfig = (name?: string) =>
@@ -124,7 +124,7 @@ export interface ThemeOutterProps {
   classnames?: ClassNamesFn;
 }
 
-export let defaultTheme: string = 'cxd';
+export let defaultTheme: string = 'smile';
 export const ThemeContext = React.createContext('');
 
 export function themeable<

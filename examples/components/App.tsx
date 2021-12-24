@@ -44,6 +44,11 @@ export function getContextPath() {
 
 const themes = [
   {
+    label: 'Smile',
+    ns: 'smile-',
+    value: 'smile'
+  },
+  {
     label: '云舍',
     ns: 'cxd-',
     value: 'cxd'
@@ -62,11 +67,6 @@ const themes = [
     label: 'Dark',
     ns: 'dark-',
     value: 'dark'
-  },
-  {
-    label: 'Smile',
-    ns: 'smile-',
-    value: 'smile'
   }
 ];
 

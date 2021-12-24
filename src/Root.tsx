@@ -56,9 +56,9 @@ export class Root extends React.Component<RootProps> {
     } = this.props;
 
     const theme = env.theme;
-    let themeName = this.props.theme || 'cxd';
+    let themeName = this.props.theme || 'smile';
     if (themeName === 'default') {
-      themeName = 'cxd';
+      themeName = 'smile';
     }
 
     return (

@@ -15,6 +15,7 @@
   <link rel="stylesheet" title="cxd" disabled href="../scss/themes/cxd.scss" />
   <link rel="stylesheet" title="dark" disabled href="../scss/themes/dark.scss" />
   <link rel="stylesheet" title="antd" disabled href="../scss/themes/antd.scss" />
+  <link rel="stylesheet" title="smile" disabled href="../scss/themes/smile.scss" />
   <link rel="stylesheet" href="../scss/helper.scss" />
   <style>
     .app-wrapper {
@@ -55,9 +56,9 @@
     document.querySelectorAll('link[title]').forEach(item => {
       item.disabled = true;
     });
-    let theme = localStorage.getItem('amis-theme') || 'cxd';
+    let theme = localStorage.getItem('amis-theme') || 'smile';
     if (theme == 'default') {
-      theme = 'cxd';
+      theme = 'smile';
     }
     document.querySelector(`link[title=${theme}]`).disabled = false;
     if (theme === 'dark') {

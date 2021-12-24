@@ -201,9 +201,9 @@ export class Alert extends React.Component<AlertProps, AlertState> {
       alertBtnLevel,
       classnames: cx
     } = this.props;
-    let theme = this.props.theme || 'cxd';
+    let theme = this.props.theme || 'smile';
     if (theme === 'default') {
-      theme = 'cxd';
+      theme = 'smile';
     }
     const __ = this.props.translate;
     const finalTitle = __(this.state.title ?? title);

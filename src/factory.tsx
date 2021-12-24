@@ -399,9 +399,9 @@ export function render(
   (window as any).amisStore = store; // 为了方便 debug.
   const env = getEnv(store);
 
-  let theme = props.theme || options.theme || 'cxd';
+  let theme = props.theme || options.theme || 'smile';
   if (theme === 'default') {
-    theme = 'cxd';
+    theme = 'smile';
   }
   env.theme = getTheme(theme);
 
