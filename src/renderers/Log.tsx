@@ -4,7 +4,7 @@
 import React from 'react';
 import {Renderer, RendererProps} from '../factory';
 import {BaseSchema, SchemaTpl} from '../Schema';
-import Ansi from 'ansi-to-react';
+import Ansi from 'smile-ansi-to-react';
 import {filter} from '../utils/tpl';
 import {buildApi, isApiOutdated} from '../utils/api';
 
