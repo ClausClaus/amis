@@ -9,7 +9,7 @@ import markdown from './scripts/markdownPlugin';
 import mockApi from './scripts/mockApiPlugin';
 
 // https://vitejs.dev/config/
-export default defineConfig(args => {
+const viteConfig = defineConfig(args => {
   console.log('🚀 ~ file: vite.config.ts:13 ~ defineConfig ~ args', args);
   return {
     plugins: [
@@ -76,3 +76,8 @@ export default defineConfig(args => {
     }
   };
 });
+console.log(
+  '🚀 ~ file: vite.config.ts:79 ~ viteConfig ~ viteConfig',
+  viteConfig
+);
+export default viteConfig;
