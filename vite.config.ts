@@ -9,68 +9,70 @@ import markdown from './scripts/markdownPlugin';
 import mockApi from './scripts/mockApiPlugin';
 
 // https://vitejs.dev/config/
-export default defineConfig({
-  base: './',
-  plugins: [
-    fis3(),
-    markdown(),
-    mockApi(),
+export default defineConfig(args => {
+  console.log('🚀 ~ file: vite.config.ts:13 ~ defineConfig ~ args', args);
+  return {
+    plugins: [
+      fis3(),
+      markdown(),
+      mockApi(),
 
-    react({
-      babel: {
-        parserOpts: {
-          plugins: ['decorators-legacy', 'classProperties']
+      react({
+        babel: {
+          parserOpts: {
+            plugins: ['decorators-legacy', 'classProperties']
+          }
         }
+      }),
+      svgr({
+        exportAsDefault: true,
+        svgrOptions: {
+          svgProps: {
+            className: 'icon'
+          },
+          prettier: false,
+          dimensions: false
+        }
+      }),
+      monacoEditorPlugin({})
+    ],
+    optimizeDeps: {
+      include: ['amis-formula/lib/doc'],
+      esbuildOptions: {
+        target: 'esnext'
       }
-    }),
-    svgr({
-      exportAsDefault: true,
-      svgrOptions: {
-        svgProps: {
-          className: 'icon'
+    },
+    server: {
+      port: 8888,
+      host: true
+    },
+    resolve: {
+      alias: [
+        {
+          find: 'amis-formula/lib',
+          replacement: path.resolve(__dirname, './packages/amis-formula/src')
         },
-        prettier: false,
-        dimensions: false
-      }
-    }),
-    monacoEditorPlugin({})
-  ],
-  optimizeDeps: {
-    include: ['amis-formula/lib/doc'],
-    esbuildOptions: {
-      target: 'esnext'
+        {
+          find: 'amis-formula',
+          replacement: path.resolve(__dirname, './packages/amis-formula/src')
+        },
+        {
+          find: 'amis-ui/lib',
+          replacement: path.resolve(__dirname, './packages/amis-ui/src')
+        },
+        {
+          find: 'amis-ui',
+          replacement: path.resolve(__dirname, './packages/amis-ui/src')
+        },
+        {
+          find: 'amis-core',
+          replacement: path.resolve(__dirname, './packages/amis-core/src')
+        },
+        {
+          find: 'amis',
+          replacement: path.resolve(__dirname, './packages/amis/src')
+        }
+      ]
     }
-  },
-  server: {
-    port: 8888,
-    host: true
-  },
-  resolve: {
-    alias: [
-      {
-        find: 'amis-formula/lib',
-        replacement: path.resolve(__dirname, './packages/amis-formula/src')
-      },
-      {
-        find: 'amis-formula',
-        replacement: path.resolve(__dirname, './packages/amis-formula/src')
-      },
-      {
-        find: 'amis-ui/lib',
-        replacement: path.resolve(__dirname, './packages/amis-ui/src')
-      },
-      {
-        find: 'amis-ui',
-        replacement: path.resolve(__dirname, './packages/amis-ui/src')
-      },
-      {
-        find: 'amis-core',
-        replacement: path.resolve(__dirname, './packages/amis-core/src')
-      },
-      {
-        find: 'amis',
-        replacement: path.resolve(__dirname, './packages/amis/src')
-      }
-    ]
-  }
+  };
 });
