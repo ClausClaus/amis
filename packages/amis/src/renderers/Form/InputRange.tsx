@@ -11,7 +11,8 @@ import {
   autobind,
   stripNumber,
   filter,
-  ActionObject
+  ActionObject,
+  isMobile
 } from 'amis-core';
 import {Range as InputRange, NumberInput, Icon} from 'amis-ui';
 import {FormBaseControlSchema, SchemaObject} from '../../Schema';
@@ -19,7 +20,7 @@ import {supportStatic} from './StaticHoc';
 
 /**
  * Range
- * 文档：https://baidu.gitee.io/amis/docs/components/form/range
+ * 文档：https://aisuda.bce.baidu.com/amis/zh-CN/components/form/range
  */
 
 export type Value = string | MultipleValue | number | [number, number];
@@ -392,13 +393,9 @@ export class Input extends React.Component<RangeItemProps, any> {
 
     const rendererEvent = await dispatchEvent(
       'blur',
-      resolveEventData(
-        this.props,
-        {
-          value
-        },
-        'value'
-      )
+      resolveEventData(this.props, {
+        value
+      })
     );
 
     if (rendererEvent?.prevented) {
@@ -417,13 +414,9 @@ export class Input extends React.Component<RangeItemProps, any> {
 
     const rendererEvent = await dispatchEvent(
       'focus',
-      resolveEventData(
-        this.props,
-        {
-          value
-        },
-        'value'
-      )
+      resolveEventData(this.props, {
+        value
+      })
     );
 
     if (rendererEvent?.prevented) {
@@ -444,7 +437,8 @@ export class Input extends React.Component<RangeItemProps, any> {
       classPrefix: ns,
       disabled,
       max,
-      min
+      min,
+      useMobileUI
     } = this.props;
     const _value = multiple
       ? type === 'min'
@@ -462,6 +456,7 @@ export class Input extends React.Component<RangeItemProps, any> {
           disabled={disabled}
           onBlur={this.onBlur}
           onFocus={this.onFocus}
+          useMobileUI={useMobileUI}
         />
       </div>
     );
@@ -582,13 +577,9 @@ export default class RangeControl extends React.PureComponent<
 
     const rendererEvent = await dispatchEvent(
       'change',
-      resolveEventData(
-        this.props,
-        {
-          value: result
-        },
-        'value'
-      )
+      resolveEventData(this.props, {
+        value: result
+      })
     );
 
     if (rendererEvent?.prevented) {
@@ -650,7 +641,8 @@ export default class RangeControl extends React.PureComponent<
       max,
       render,
       marks,
-      region
+      region,
+      useMobileUI
     } = props;
 
     // 处理自定义json配置
@@ -665,6 +657,7 @@ export default class RangeControl extends React.PureComponent<
             (renderMarks[key] = render(region, item as SchemaObject));
         }
       });
+    const mobileUI = useMobileUI && isMobile();
 
     return (
       <div
@@ -672,6 +665,7 @@ export default class RangeControl extends React.PureComponent<
           'RangeControl',
           `${ns}InputRange`,
           {'is-disabled': disabled},
+          {'is-mobile': mobileUI},
           className
         )}
       >

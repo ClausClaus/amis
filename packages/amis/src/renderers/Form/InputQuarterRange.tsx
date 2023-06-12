@@ -7,7 +7,7 @@ import {DateRangePicker} from 'amis-ui';
 import {supportStatic} from './StaticHoc';
 /**
  * QuarterRange 季度范围控件
- * 文档：https://baidu.gitee.io/amis/docs/components/form/input-quarter-range
+ * 文档：https://aisuda.bce.baidu.com/amis/zh-CN/components/form/input-quarter-range
  */
 export interface QuarterRangeControlSchema
   extends Omit<DateRangeControlSchema, 'type'> {
@@ -62,7 +62,9 @@ export class QuarterRangeControlRenderer extends QuarterRangeControl {
     joinValues: true,
     delimiter: ',',
     timeFormat: '',
+    /** shortcuts的兼容配置 */
     ranges: 'thisquarter,prevquarter',
+    shortcuts: 'thisquarter,prevquarter',
     animation: true
   };
 }

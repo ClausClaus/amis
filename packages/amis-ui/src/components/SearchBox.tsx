@@ -6,7 +6,7 @@ import moment from 'moment';
 import {ThemeProps, themeable} from 'amis-core';
 import {Icon} from './icons';
 import {uncontrollable} from 'amis-core';
-import {autobind} from 'amis-core';
+import {autobind, isMobile} from 'amis-core';
 import {LocaleProps, localeable} from 'amis-core';
 
 export interface HistoryRecord {
@@ -47,6 +47,8 @@ export interface SearchBoxProps extends ThemeProps, LocaleProps {
   onBlur?: () => void;
   /** 历史记录配置 */
   history?: SearchHistoryOptions;
+  clearAndSubmit?: boolean;
+  useMobileUI?: boolean;
 }
 
 export interface SearchBoxState {
@@ -71,7 +73,8 @@ export class SearchBox extends React.Component<SearchBoxProps, SearchBoxState> {
     enhance: false,
     clearable: false,
     searchImediately: true,
-    history: historyDefaultOptions
+    history: historyDefaultOptions,
+    clearAndSubmit: false
   };
 
   state = {
@@ -154,11 +157,14 @@ export class SearchBox extends React.Component<SearchBoxProps, SearchBoxState> {
 
   @autobind
   handleClear() {
-    const {searchImediately, onChange} = this.props;
+    const {searchImediately, clearAndSubmit, onChange} = this.props;
 
     this.setState({inputValue: ''}, () => {
       onChange?.('');
-      searchImediately && this.lazyEmitSearch();
+
+      if (clearAndSubmit === true || searchImediately) {
+        this.lazyEmitSearch();
+      }
     });
   }
 
@@ -279,10 +285,12 @@ export class SearchBox extends React.Component<SearchBoxProps, SearchBoxState> {
       mini,
       enhance,
       clearable,
+      useMobileUI,
       translate: __
     } = this.props;
     const {isFocused, inputValue} = this.state;
     const {enable} = this.getHistoryOptions();
+    const mobileUI = useMobileUI && isMobile();
 
     return (
       <div
@@ -293,7 +301,8 @@ export class SearchBox extends React.Component<SearchBoxProps, SearchBoxState> {
           disabled ? 'is-disabled' : '',
           isFocused ? 'is-focused' : '',
           !mini || active ? 'is-active' : '',
-          {'is-history': enable}
+          {'is-history': enable},
+          {'is-mobile': mobileUI}
         )}
         style={style}
       >

@@ -6,7 +6,8 @@ import {
   FormControlProps,
   FormBaseControl,
   resolveEventData,
-  ApiObject
+  ApiObject,
+  FormHorizontal
 } from 'amis-core';
 import {ActionObject, Api} from 'amis-core';
 import {ComboStore, IComboStore} from 'amis-core';
@@ -45,6 +46,8 @@ import {
 } from '../../Schema';
 import {ListenerAction} from 'amis-core';
 import type {SchemaTokenizeableString} from '../../Schema';
+import isPlainObject from 'lodash/isPlainObject';
+import {isMobile} from 'amis-core';
 
 export type ComboCondition = {
   test: string;
@@ -68,7 +71,7 @@ export type ComboSubControl = SchemaObject & {
 
 /**
  * Combo 组合输入框类型
- * 文档：https://baidu.gitee.io/amis/docs/components/form/combo
+ * 文档：https://aisuda.bce.baidu.com/amis/zh-CN/components/form/combo
  */
 export interface ComboControlSchema extends FormBaseControlSchema {
   /**
@@ -198,6 +201,11 @@ export interface ComboControlSchema extends FormBaseControlSchema {
    * 子表单的模式。
    */
   subFormMode?: 'normal' | 'horizontal' | 'inline';
+
+  /**
+   * 如果是水平排版，这个属性可以细化水平排版的左右宽度占比。
+   */
+  subFormHorizontal?: FormHorizontal;
 
   /**
    * 没有成员时显示。
@@ -375,6 +383,7 @@ export default class ComboControl extends React.Component<ComboProps> {
     super(props);
 
     this.handleChange = this.handleChange.bind(this);
+    this.handleRadioChange = this.handleRadioChange.bind(this);
     this.handleSingleFormChange = this.handleSingleFormChange.bind(this);
     this.handleSingleFormInit = this.handleSingleFormInit.bind(this);
     this.handleFormInit = this.handleFormInit.bind(this);
@@ -404,7 +413,13 @@ export default class ComboControl extends React.Component<ComboProps> {
   componentDidUpdate(prevProps: ComboProps) {
     const props = this.props;
 
-    if (anyChanged(['minLength', 'maxLength', 'value'], prevProps, props)) {
+    if (
+      anyChanged(['minLength', 'maxLength', 'value'], prevProps, props) ||
+      this.resolveVariableProps(prevProps, 'minLength') !==
+        this.resolveVariableProps(props, 'minLength') ||
+      this.resolveVariableProps(prevProps, 'maxLength') !==
+        this.resolveVariableProps(props, 'maxLength')
+    ) {
       const {store, multiple} = props;
       const values = this.getValueAsArray(props);
 
@@ -588,14 +603,10 @@ export default class ComboControl extends React.Component<ComboProps> {
     // todo:这里的数据结构与表单项最终类型不一致，需要区分是否多选、是否未input-kv or input-kvs
     const rendererEvent = await dispatchEvent(
       'add',
-      resolveEventData(
-        this.props,
-        {
-          value:
-            flat && joinValues ? value.join(delimiter || ',') : cloneDeep(value)
-        },
-        'value'
-      )
+      resolveEventData(this.props, {
+        value:
+          flat && joinValues ? value.join(delimiter || ',') : cloneDeep(value)
+      })
     );
 
     if (rendererEvent?.prevented) {
@@ -633,7 +644,8 @@ export default class ComboControl extends React.Component<ComboProps> {
       data,
       env,
       translate: __,
-      dispatchEvent
+      dispatchEvent,
+      submitOnChange
     } = this.props;
 
     if (disabled) {
@@ -646,18 +658,12 @@ export default class ComboControl extends React.Component<ComboProps> {
     // todo:这里的数据结构与表单项最终类型不一致，需要区分是否多选、是否未input-kv or input-kvs
     const rendererEvent = await dispatchEvent(
       'delete',
-      resolveEventData(
-        this.props,
-        {
-          key,
-          value:
-            flat && joinValues
-              ? value.join(delimiter || ',')
-              : cloneDeep(value),
-          item: value[key]
-        },
-        'value'
-      )
+      resolveEventData(this.props, {
+        key,
+        value:
+          flat && joinValues ? value.join(delimiter || ',') : cloneDeep(value),
+        item: value[key]
+      })
     );
 
     if (rendererEvent?.prevented) {
@@ -691,7 +697,7 @@ export default class ComboControl extends React.Component<ComboProps> {
       value = value.join(delimiter || ',');
     }
 
-    this.props.onChange(value);
+    this.props.onChange(value, submitOnChange, true);
   }
 
   handleChange(values: any, diff: any, {index}: any) {
@@ -751,6 +757,29 @@ export default class ComboControl extends React.Component<ComboProps> {
           item => item.unique && item.syncOptions(undefined, form.data)
         )
     );
+  }
+
+  handleRadioChange(
+    ctx: any,
+    {index, name, trueValue = true, falseValue = false}: any
+  ) {
+    const {onChange, submitOnChange, multiple, disabled} = this.props;
+    if (!multiple || disabled || !name) {
+      return;
+    }
+
+    let value = this.getValueAsArray();
+    if (!Array.isArray(value) || value.length < 2 || !isPlainObject(value[0])) {
+      return;
+    }
+    value = value.map((item, i) => ({
+      ...item,
+      [name]: i === index ? trueValue : falseValue
+    }));
+
+    onChange(value, submitOnChange, true);
+
+    return false;
   }
 
   handleSingleFormChange(values: object) {
@@ -1263,8 +1292,11 @@ export default class ComboControl extends React.Component<ComboProps> {
       itemRemovableOn,
       disabled,
       removable,
-      deleteBtn
+      deleteBtn,
+      useMobileUI
     } = this.props;
+
+    const mobileUI = useMobileUI && isMobile();
 
     const finnalRemovable =
       store.removable !== false && // minLength ?
@@ -1333,7 +1365,7 @@ export default class ComboControl extends React.Component<ComboProps> {
         onClick={this.deleteItem.bind(this, index)}
         key="delete"
         className={cx(`Combo-delBtn ${!store.removable ? 'is-disabled' : ''}`)}
-        data-tooltip={__('delete')}
+        data-tooltip={!mobileUI ? __('delete') : null}
         data-position="bottom"
       >
         {deleteIcon ? (
@@ -1438,11 +1470,13 @@ export default class ComboControl extends React.Component<ComboProps> {
       translate: __,
       itemClassName,
       itemsWrapperClassName,
-      static: isStatic
+      static: isStatic,
+      useMobileUI
     } = this.props;
 
     let items = this.props.items;
     let value = this.props.value;
+    const mobileUI = useMobileUI && isMobile();
 
     if (flat && typeof value === 'string') {
       value = value.split(delimiter || ',');
@@ -1452,6 +1486,9 @@ export default class ComboControl extends React.Component<ComboProps> {
       <div
         className={cx(
           `Combo Combo--multi`,
+          {
+            'is-mobile': mobileUI
+          },
           multiLine ? `Combo--ver` : `Combo--hor`,
           noBorder ? `Combo--noBorder` : '',
           disabled ? 'is-disabled' : '',
@@ -1567,9 +1604,11 @@ export default class ComboControl extends React.Component<ComboProps> {
       typeSwitchable,
       nullable,
       translate: __,
-      itemClassName
+      itemClassName,
+      useMobileUI
     } = this.props;
 
+    const mobileUI = useMobileUI && isMobile();
     let items = this.props.items;
     const data = isObject(value) ? this.formatValue(value) : this.defaultValue;
     let condition: ComboCondition | null = null;
@@ -1583,6 +1622,9 @@ export default class ComboControl extends React.Component<ComboProps> {
       <div
         className={cx(
           `Combo Combo--single`,
+          {
+            'is-mobile': mobileUI
+          },
           multiLine ? `Combo--ver` : `Combo--hor`,
           noBorder ? `Combo--noBorder` : '',
           disabled ? 'is-disabled' : ''
@@ -1635,9 +1677,11 @@ export default class ComboControl extends React.Component<ComboProps> {
       multiple,
       tabsMode,
       subFormMode,
+      subFormHorizontal,
       changeImmediately,
       lazyLoad,
-      translate: __
+      translate: __,
+      static: isStatic
     } = this.props;
 
     // 单个
@@ -1650,10 +1694,12 @@ export default class ComboControl extends React.Component<ComboProps> {
           wrapperComponent: 'div',
           wrapWithPanel: false,
           mode: multiLine ? subFormMode || 'normal' : 'row',
+          horizontal: subFormHorizontal,
           className: cx(`Combo-form`, formClassName)
         },
         {
           disabled: disabled,
+          static: isStatic,
           data,
           onChange: this.handleSingleFormChange,
           ref: this.makeFormRef(0),
@@ -1671,15 +1717,18 @@ export default class ComboControl extends React.Component<ComboProps> {
           wrapperComponent: 'div',
           wrapWithPanel: false,
           mode: tabsMode ? subFormMode : multiLine ? subFormMode : 'row',
+          horizontal: subFormHorizontal,
           className: cx(`Combo-form`, formClassName)
         },
         {
           index,
           disabled,
+          static: isStatic,
           data,
           onChange: this.handleChange,
           onInit: this.handleFormInit,
           onAction: this.handleAction,
+          onRadioChange: this.handleRadioChange,
           ref: this.makeFormRef(index),
           canAccessSuperData,
           lazyChange: changeImmediately ? false : true,
@@ -1739,7 +1788,14 @@ export default class ComboControl extends React.Component<ComboProps> {
 @FormItem({
   type: 'combo',
   storeType: ComboStore.name,
-  extendsData: false
+  extendsData: false,
+  shouldComponentUpdate: (props: any, prevProps: any) =>
+    (isPureVariable(props.maxLength) &&
+      resolveVariableAndFilter(prevProps.maxLength, prevProps.data) !==
+        resolveVariableAndFilter(props.maxLength, props.data)) ||
+    (isPureVariable(props.minLength) &&
+      resolveVariableAndFilter(prevProps.minLength, prevProps.data) !==
+        resolveVariableAndFilter(props.minLength, props.data))
 })
 export class ComboControlRenderer extends ComboControl {
   // 支持更新指定索引的值

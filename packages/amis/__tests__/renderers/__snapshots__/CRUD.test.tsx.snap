@@ -158,6 +158,7 @@ exports[`Renderer: crud keepItemSelectionOnPageChange & maxKeepItemSelectionLeng
                         >
                           <label
                             class="cxd-Checkbox cxd-Checkbox--checkbox"
+                            data-role="checkbox"
                           >
                             <input
                               disabled=""
@@ -182,6 +183,7 @@ exports[`Renderer: crud keepItemSelectionOnPageChange & maxKeepItemSelectionLeng
                         >
                           <label
                             class="cxd-Checkbox cxd-Checkbox--checkbox cxd-Checkbox--full"
+                            data-role="checkbox"
                           >
                             <input
                               type="checkbox"
@@ -203,6 +205,7 @@ exports[`Renderer: crud keepItemSelectionOnPageChange & maxKeepItemSelectionLeng
                         >
                           <label
                             class="cxd-Checkbox cxd-Checkbox--checkbox cxd-Checkbox--full"
+                            data-role="checkbox"
                           >
                             <input
                               type="checkbox"
@@ -224,6 +227,7 @@ exports[`Renderer: crud keepItemSelectionOnPageChange & maxKeepItemSelectionLeng
                         >
                           <label
                             class="cxd-Checkbox cxd-Checkbox--checkbox cxd-Checkbox--full"
+                            data-role="checkbox"
                           >
                             <input
                               type="checkbox"
@@ -245,6 +249,7 @@ exports[`Renderer: crud keepItemSelectionOnPageChange & maxKeepItemSelectionLeng
                         >
                           <label
                             class="cxd-Checkbox cxd-Checkbox--checkbox cxd-Checkbox--full"
+                            data-role="checkbox"
                           >
                             <input
                               type="checkbox"
@@ -266,6 +271,7 @@ exports[`Renderer: crud keepItemSelectionOnPageChange & maxKeepItemSelectionLeng
                         >
                           <label
                             class="cxd-Checkbox cxd-Checkbox--checkbox cxd-Checkbox--full"
+                            data-role="checkbox"
                           >
                             <input
                               disabled=""
@@ -288,6 +294,7 @@ exports[`Renderer: crud keepItemSelectionOnPageChange & maxKeepItemSelectionLeng
                         >
                           <label
                             class="cxd-Checkbox cxd-Checkbox--checkbox cxd-Checkbox--full"
+                            data-role="checkbox"
                           >
                             <input
                               disabled=""
@@ -310,6 +317,7 @@ exports[`Renderer: crud keepItemSelectionOnPageChange & maxKeepItemSelectionLeng
                         >
                           <label
                             class="cxd-Checkbox cxd-Checkbox--checkbox cxd-Checkbox--full"
+                            data-role="checkbox"
                           >
                             <input
                               disabled=""
@@ -332,6 +340,7 @@ exports[`Renderer: crud keepItemSelectionOnPageChange & maxKeepItemSelectionLeng
                         >
                           <label
                             class="cxd-Checkbox cxd-Checkbox--checkbox cxd-Checkbox--full"
+                            data-role="checkbox"
                           >
                             <input
                               disabled=""
@@ -354,6 +363,7 @@ exports[`Renderer: crud keepItemSelectionOnPageChange & maxKeepItemSelectionLeng
                         >
                           <label
                             class="cxd-Checkbox cxd-Checkbox--checkbox cxd-Checkbox--full"
+                            data-role="checkbox"
                           >
                             <input
                               disabled=""
@@ -376,6 +386,7 @@ exports[`Renderer: crud keepItemSelectionOnPageChange & maxKeepItemSelectionLeng
                         >
                           <label
                             class="cxd-Checkbox cxd-Checkbox--checkbox cxd-Checkbox--full"
+                            data-role="checkbox"
                           >
                             <input
                               disabled=""
@@ -411,6 +422,7 @@ exports[`Renderer: crud keepItemSelectionOnPageChange & maxKeepItemSelectionLeng
                         >
                           <label
                             class="cxd-Checkbox cxd-Checkbox--checkbox"
+                            data-role="checkbox"
                           >
                             <input
                               disabled=""
@@ -439,6 +451,7 @@ exports[`Renderer: crud keepItemSelectionOnPageChange & maxKeepItemSelectionLeng
                           </div>
                           <span
                             class="cxd-TableCell-sortBtn"
+                            data-index="3"
                           >
                             <i
                               class="cxd-TableCell-sortBtn--down"
@@ -501,6 +514,7 @@ exports[`Renderer: crud keepItemSelectionOnPageChange & maxKeepItemSelectionLeng
                         >
                           <label
                             class="cxd-Checkbox cxd-Checkbox--checkbox cxd-Checkbox--full"
+                            data-role="checkbox"
                           >
                             <input
                               type="checkbox"
@@ -549,6 +563,7 @@ exports[`Renderer: crud keepItemSelectionOnPageChange & maxKeepItemSelectionLeng
                         >
                           <label
                             class="cxd-Checkbox cxd-Checkbox--checkbox cxd-Checkbox--full"
+                            data-role="checkbox"
                           >
                             <input
                               type="checkbox"
@@ -597,6 +612,7 @@ exports[`Renderer: crud keepItemSelectionOnPageChange & maxKeepItemSelectionLeng
                         >
                           <label
                             class="cxd-Checkbox cxd-Checkbox--checkbox cxd-Checkbox--full"
+                            data-role="checkbox"
                           >
                             <input
                               type="checkbox"
@@ -645,6 +661,7 @@ exports[`Renderer: crud keepItemSelectionOnPageChange & maxKeepItemSelectionLeng
                         >
                           <label
                             class="cxd-Checkbox cxd-Checkbox--checkbox cxd-Checkbox--full"
+                            data-role="checkbox"
                           >
                             <input
                               type="checkbox"
@@ -693,6 +710,7 @@ exports[`Renderer: crud keepItemSelectionOnPageChange & maxKeepItemSelectionLeng
                         >
                           <label
                             class="cxd-Checkbox cxd-Checkbox--checkbox cxd-Checkbox--full"
+                            data-role="checkbox"
                           >
                             <input
                               disabled=""
@@ -742,6 +760,7 @@ exports[`Renderer: crud keepItemSelectionOnPageChange & maxKeepItemSelectionLeng
                         >
                           <label
                             class="cxd-Checkbox cxd-Checkbox--checkbox cxd-Checkbox--full"
+                            data-role="checkbox"
                           >
                             <input
                               disabled=""
@@ -791,6 +810,7 @@ exports[`Renderer: crud keepItemSelectionOnPageChange & maxKeepItemSelectionLeng
                         >
                           <label
                             class="cxd-Checkbox cxd-Checkbox--checkbox cxd-Checkbox--full"
+                            data-role="checkbox"
                           >
                             <input
                               disabled=""
@@ -840,6 +860,7 @@ exports[`Renderer: crud keepItemSelectionOnPageChange & maxKeepItemSelectionLeng
                         >
                           <label
                             class="cxd-Checkbox cxd-Checkbox--checkbox cxd-Checkbox--full"
+                            data-role="checkbox"
                           >
                             <input
                               disabled=""
@@ -889,6 +910,7 @@ exports[`Renderer: crud keepItemSelectionOnPageChange & maxKeepItemSelectionLeng
                         >
                           <label
                             class="cxd-Checkbox cxd-Checkbox--checkbox cxd-Checkbox--full"
+                            data-role="checkbox"
                           >
                             <input
                               disabled=""
@@ -938,6 +960,7 @@ exports[`Renderer: crud keepItemSelectionOnPageChange & maxKeepItemSelectionLeng
                         >
                           <label
                             class="cxd-Checkbox cxd-Checkbox--checkbox cxd-Checkbox--full"
+                            data-role="checkbox"
                           >
                             <input
                               disabled=""
@@ -1064,6 +1087,7 @@ exports[`Renderer: crud keepItemSelectionOnPageChange & maxKeepItemSelectionLeng
                         >
                           <label
                             class="cxd-Checkbox cxd-Checkbox--checkbox"
+                            data-role="checkbox"
                           >
                             <input
                               disabled=""
@@ -1111,6 +1135,7 @@ exports[`Renderer: crud keepItemSelectionOnPageChange & maxKeepItemSelectionLeng
                         >
                           <label
                             class="cxd-Checkbox cxd-Checkbox--checkbox"
+                            data-role="checkbox"
                           >
                             <input
                               disabled=""
@@ -1140,6 +1165,7 @@ exports[`Renderer: crud keepItemSelectionOnPageChange & maxKeepItemSelectionLeng
                           </div>
                           <span
                             class="cxd-TableCell-sortBtn"
+                            data-index="3"
                           >
                             <i
                               class="cxd-TableCell-sortBtn--down"
@@ -1196,10 +1222,6 @@ exports[`Renderer: crud keepItemSelectionOnPageChange & maxKeepItemSelectionLeng
                 </div>
               </div>
               <div
-                class="cxd-Table-fixedTop-shadow"
-                style=""
-              />
-              <div
                 class="cxd-Table-toolbar cxd-Table-footToolbar"
               >
                 <div
@@ -1211,7 +1233,7 @@ exports[`Renderer: crud keepItemSelectionOnPageChange & maxKeepItemSelectionLeng
                     <div
                       class="cxd-Crud-statistics"
                     >
-                      1/15 总共：144 项
+                      1/15 共：144 项
                     </div>
                   </div>
                   <div
@@ -1419,6 +1441,7 @@ exports[`Renderer: crud sortable & orderBy & orderDir & orderField 1`] = `
                           </div>
                           <span
                             class="cxd-TableCell-sortBtn"
+                            data-index="3"
                           >
                             <i
                               class="cxd-TableCell-sortBtn--down"
@@ -1903,6 +1926,7 @@ exports[`Renderer: crud sortable & orderBy & orderDir & orderField 1`] = `
                           </div>
                           <span
                             class="cxd-TableCell-sortBtn"
+                            data-index="3"
                           >
                             <i
                               class="cxd-TableCell-sortBtn--down"
@@ -1959,10 +1983,6 @@ exports[`Renderer: crud sortable & orderBy & orderDir & orderField 1`] = `
                 </div>
               </div>
               <div
-                class="cxd-Table-fixedTop-shadow"
-                style=""
-              />
-              <div
                 class="cxd-Table-toolbar cxd-Table-footToolbar"
               >
                 <div
@@ -1974,7 +1994,7 @@ exports[`Renderer: crud sortable & orderBy & orderDir & orderField 1`] = `
                     <div
                       class="cxd-Crud-statistics"
                     >
-                      1/15 总共：144 项
+                      1/15 共：144 项
                     </div>
                   </div>
                   <div
@@ -2169,7 +2189,7 @@ exports[`Renderer:crud basic interval headerToolbar footerToolbar 1`] = `
                     <div
                       class="cxd-Crud-statistics"
                     >
-                      1/72 总共：144 项
+                      1/72 共：144 项
                     </div>
                   </div>
                 </div>
@@ -2666,7 +2686,7 @@ exports[`Renderer:crud basic interval headerToolbar footerToolbar 1`] = `
                       <div
                         class="cxd-Crud-statistics"
                       >
-                        1/72 总共：144 项
+                        1/72 共：144 项
                       </div>
                     </div>
                   </div>
@@ -2767,10 +2787,6 @@ exports[`Renderer:crud basic interval headerToolbar footerToolbar 1`] = `
                 </div>
               </div>
               <div
-                class="cxd-Table-fixedTop-shadow"
-                style=""
-              />
-              <div
                 class="cxd-Table-toolbar cxd-Table-footToolbar"
               >
                 <div
@@ -2859,6 +2875,155 @@ exports[`Renderer:crud basic interval headerToolbar footerToolbar 1`] = `
                               role="button"
                             >
                               7
+                            </a>
+                          </li>
+                          <li
+                            class="ellipsis"
+                          >
+                            <a
+                              role="button"
+                            >
+                              ...
+                            </a>
+                          </li>
+                          <li
+                            class="cxd-Pagination-pager-item"
+                          >
+                            <a
+                              role="button"
+                            >
+                              72
+                            </a>
+                          </li>
+                          <li
+                            class="cxd-Pagination-next"
+                          >
+                            <span>
+                              <icon-mock
+                                classname="icon icon-right-arrow"
+                                icon="right-arrow"
+                              />
+                            </span>
+                          </li>
+                        </ul>
+                        <div
+                          class="cxd-Pagination-inputGroup cxd-Pagination-item"
+                        >
+                          <span
+                            class="cxd-Pagination-inputGroup-left"
+                          >
+                            跳转至
+                          </span>
+                          <input
+                            class="cxd-Pagination-inputGroup-input"
+                            type="text"
+                            value=""
+                          />
+                          <span
+                            class="cxd-Pagination-inputGroup-right"
+                          >
+                            GO
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <div
+                    class="cxd-Crud-toolbar-item cxd-Crud-toolbar-item--right"
+                  >
+                    <div
+                      class="cxd-Crud-pager"
+                    >
+                      <div
+                        class="cxd-Pagination-wrap"
+                      >
+                        <div
+                          class="cxd-Pagination-total cxd-Pagination-item"
+                        >
+                          共 144 条
+                        </div>
+                        <div
+                          aria-expanded="false"
+                          aria-haspopup="listbox"
+                          aria-labelledby="downshift-0-label"
+                          class="cxd-Select cxd-Pagination-perpage cxd-Pagination-item"
+                          role="combobox"
+                          tabindex="0"
+                        >
+                          <div
+                            class="cxd-Select-valueWrap"
+                          >
+                            <div
+                              class="cxd-Select-placeholder"
+                            >
+                              请选择
+                            </div>
+                          </div>
+                          <span
+                            class="cxd-Select-arrow"
+                          >
+                            <icon-mock
+                              classname="icon icon-right-arrow-bold"
+                              icon="right-arrow-bold"
+                            />
+                          </span>
+                        </div>
+                        <ul
+                          class="cxd-Pagination cxd-Pagination--sm cxd-Pagination-item"
+                        >
+                          <li
+                            class="cxd-Pagination-prev is-disabled"
+                          >
+                            <span>
+                              <icon-mock
+                                classname="icon icon-left-arrow"
+                                icon="left-arrow"
+                              />
+                            </span>
+                          </li>
+                          <li
+                            class="cxd-Pagination-pager-item is-active"
+                          >
+                            <a
+                              role="button"
+                            >
+                              1
+                            </a>
+                          </li>
+                          <li
+                            class="cxd-Pagination-pager-item"
+                          >
+                            <a
+                              role="button"
+                            >
+                              2
+                            </a>
+                          </li>
+                          <li
+                            class="cxd-Pagination-pager-item"
+                          >
+                            <a
+                              role="button"
+                            >
+                              3
+                            </a>
+                          </li>
+                          <li
+                            class="cxd-Pagination-pager-item"
+                          >
+                            <a
+                              role="button"
+                            >
+                              4
+                            </a>
+                          </li>
+                          <li
+                            class="cxd-Pagination-pager-item"
+                          >
+                            <a
+                              role="button"
+                            >
+                              5
                             </a>
                           </li>
                           <li
@@ -3655,7 +3820,7 @@ exports[`Renderer:crud cards 1`] = `
                     <div
                       class="cxd-Crud-statistics"
                     >
-                      1/24 总共：144 项
+                      1/24 共：144 项
                     </div>
                   </div>
                   <div
@@ -4058,7 +4223,7 @@ exports[`Renderer:crud list 1`] = `
                     <div
                       class="cxd-Crud-statistics"
                     >
-                      1/15 总共：144 项
+                      1/15 共：144 项
                     </div>
                   </div>
                   <div
@@ -4476,10 +4641,6 @@ exports[`Renderer:crud source & alwaysShowPagination 1`] = `
                 </div>
               </div>
               <div
-                class="cxd-Table-fixedTop-shadow"
-                style=""
-              />
-              <div
                 class="cxd-Table-toolbar cxd-Table-footToolbar"
               >
                 <div
@@ -4491,7 +4652,7 @@ exports[`Renderer:crud source & alwaysShowPagination 1`] = `
                     <div
                       class="cxd-Crud-statistics"
                     >
-                      1/1 总共：0 项
+                      1/1 共：0 项
                     </div>
                   </div>
                   <div

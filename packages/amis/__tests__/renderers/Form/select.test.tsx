@@ -817,3 +817,125 @@ test('Renderer:select associated mode with virtual', async () => {
 
   expect(container).toMatchSnapshot('');
 });
+
+test('Renderer:select value contains delimiter when single', async () => {
+  const {container} = render(
+    amisRender({
+      type: 'page',
+      body: {
+        type: 'form',
+        body: [
+          {
+            label: '单选不分割',
+            type: 'select',
+            name: 'select',
+            value: 'a,b',
+            options: [
+              {
+                label: 'ALabel',
+                value: 'a,b'
+              },
+              {
+                label: 'BLabel',
+                value: 'b'
+              },
+              {
+                label: 'CLabel',
+                value: 'c'
+              },
+              {
+                label: 'DLabel',
+                value: 'd'
+              }
+            ]
+          }
+        ]
+      }
+    })
+  );
+
+  expect(
+    container.querySelector('.cxd-Select-valueWrap .cxd-Select-value')!
+      .innerHTML
+  ).toEqual('ALabel');
+});
+
+test('should call the user filterOption if it is provided', async () => {
+  const filterOption = jest.fn().mockImplementation(options => options);
+  const options = [
+    {
+      label: 'label1',
+      value: 'value1',
+      comment: 'comment1'
+    },
+    {
+      label: 'label2',
+      value: 'value2',
+      comment: 'comment2'
+    }
+  ];
+
+  const {debug} = render(
+    amisRender(
+      {
+        type: 'select',
+        name: 'select',
+        searchable: true,
+        filterOption,
+        options
+      },
+      {},
+      makeEnv()
+    )
+  );
+
+  const select = screen.getByText('请选择');
+  fireEvent.click(select);
+  fireEvent.change(screen.getByPlaceholderText('搜索'), {
+    target: {value: 'comment'}
+  });
+
+  expect(filterOption).toBeCalled();
+  expect(filterOption).toBeCalledWith(options, 'comment', {
+    keys: ['label', 'value']
+  });
+});
+
+test('should call the string style user filterOption if it is provided', async () => {
+  const options = [
+    {
+      label: 'label1',
+      value: 'value1',
+      comment: 'comment1'
+    },
+    {
+      label: 'label2',
+      value: 'value2',
+      comment: 'comment2'
+    }
+  ];
+
+  const {debug} = render(
+    amisRender(
+      {
+        type: 'select',
+        name: 'select',
+        searchable: true,
+        filterOption: "return [{label: 'label3', value: 'value3'}]",
+        options
+      },
+      {},
+      makeEnv()
+    )
+  );
+
+  const select = screen.getByText('请选择');
+  fireEvent.click(select);
+  fireEvent.change(screen.getByPlaceholderText('搜索'), {
+    target: {value: 'comment'}
+  });
+
+  await waitFor(() => {
+    expect(screen.getByText('label3')).toBeInTheDocument();
+  });
+});

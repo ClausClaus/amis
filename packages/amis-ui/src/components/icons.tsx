@@ -115,8 +115,12 @@ export const pauseIcon = <PauseIcon />;
 export const leftArrowIcon = <LeftArrowIcon />;
 export const rightArrowIcon = <RightArrowIcon />;
 const iconFactory: {
-  [propName: string]: React.ReactType<{}>;
+  [propName: string]: React.ElementType<{}>;
 } = {};
+
+export function getIconNames() {
+  return Object.keys(iconFactory);
+}
 
 export function getIcon(key: string) {
   return iconFactory[key];
@@ -126,7 +130,7 @@ export function hasIcon(iconName: string) {
   return !!getIcon(iconName);
 }
 
-export function registerIcon(key: string, component: React.ReactType<{}>) {
+export function registerIcon(key: string, component: React.ElementType<{}>) {
   iconFactory[key] = component;
 }
 
@@ -200,6 +204,7 @@ registerIcon('alert-success', AlertSuccess);
 registerIcon('alert-info', AlertInfo);
 registerIcon('alert-warning', AlertWarning);
 registerIcon('alert-danger', AlertDanger);
+registerIcon('alert-fail', AlertDanger);
 registerIcon('tree-down', TreeDownIcon);
 registerIcon('function', FunctionIcon);
 registerIcon('input-clear', InputClearIcon);
@@ -255,7 +260,7 @@ export function Icon({
       const svg = /(<svg.*<\/svg>)/.exec(svgStr);
 
       if (svg) {
-        const svgHTML = svg[0].replaceAll('\\"', '"');
+        const svgHTML = svg[0].replace(/\\"/g, '"');
         if (dom.svgHTMLClone !== svgHTML) {
           dom.innerHTML = svgHTML;
           // 存储svg，不直接用innerHTML是防止<circle />渲染后变成<circle></circle>的情况
@@ -273,6 +278,9 @@ export function Icon({
 
   const Component = getIcon(icon);
   const isURLIcon = typeof icon === 'string' && icon?.indexOf('.') !== -1;
+  const isIconfont =
+    typeof icon === 'string' &&
+    (~icon?.indexOf('iconfont') || ~icon?.indexOf('fa'));
 
   return Component ? (
     <>
@@ -288,6 +296,8 @@ export function Icon({
     </>
   ) : isURLIcon ? (
     <img className={cx(`${classPrefix}Icon`, className)} src={icon} />
+  ) : isIconfont ? (
+    <i className={cx(icon, className)} />
   ) : (
     <span className="text-danger">没有 icon {icon}</span>
   );

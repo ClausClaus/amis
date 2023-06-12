@@ -8,12 +8,13 @@ import {
 import cx from 'classnames';
 import {filterDate, isPureVariable, resolveVariableAndFilter} from 'amis-core';
 import moment from 'moment';
-import 'moment/locale/zh-cn';
 import {DatePicker} from 'amis-ui';
 import {FormBaseControlSchema, SchemaObject} from '../../Schema';
 import {createObject, anyChanged, isMobile, autobind} from 'amis-core';
 import {ActionObject} from 'amis-core';
 import {supportStatic} from './StaticHoc';
+
+import type {ShortCuts} from 'amis-ui/lib/components/DatePicker';
 
 export interface InputDateBaseControlSchema extends FormBaseControlSchema {
   /**
@@ -56,11 +57,16 @@ export interface InputDateBaseControlSchema extends FormBaseControlSchema {
    * 边框模式，全边框，还是半边框，或者没边框。
    */
   borderMode?: 'full' | 'half' | 'none';
+
+  /**
+   * 日期快捷键
+   */
+  shortcuts?: string | ShortCuts[];
 }
 
 /**
  * Date日期选择控件
- * 文档：https://baidu.gitee.io/amis/docs/components/form/date
+ * 文档：https://aisuda.bce.baidu.com/amis/zh-CN/components/form/date
  */
 export interface DateControlSchema extends InputDateBaseControlSchema {
   /**
@@ -98,7 +104,7 @@ export interface DateControlSchema extends InputDateBaseControlSchema {
 
 /**
  * Datetime日期时间选择控件
- * 文档：https://baidu.gitee.io/amis/docs/components/form/datetime
+ * 文档：https://aisuda.bce.baidu.com/amis/zh-CN/components/form/datetime
  */
 export interface DateTimeControlSchema extends InputDateBaseControlSchema {
   /**
@@ -143,7 +149,7 @@ export interface DateTimeControlSchema extends InputDateBaseControlSchema {
 
 /**
  * Time 时间选择控件
- * 文档：https://baidu.gitee.io/amis/docs/components/form/time
+ * 文档：https://aisuda.bce.baidu.com/amis/zh-CN/components/form/time
  */
 export interface TimeControlSchema extends InputDateBaseControlSchema {
   /**
@@ -178,7 +184,7 @@ export interface TimeControlSchema extends InputDateBaseControlSchema {
 
 /**
  * Month 月份选择控件
- * 文档：https://baidu.gitee.io/amis/docs/components/form/Month
+ * 文档：https://aisuda.bce.baidu.com/amis/zh-CN/components/form/Month
  */
 export interface MonthControlSchema extends InputDateBaseControlSchema {
   /**
@@ -288,6 +294,7 @@ export default class DateControl extends React.PureComponent<
   DateProps,
   DateControlState
 > {
+  placeholder: string = '';
   static defaultProps = {
     format: 'X',
     viewMode: 'days',
@@ -430,7 +437,7 @@ export default class DateControl extends React.PureComponent<
   @autobind
   dispatchEvent(e: React.SyntheticEvent<HTMLElement>) {
     const {dispatchEvent, value} = this.props;
-    dispatchEvent(e, resolveEventData(this.props, {value}, 'value'));
+    dispatchEvent(e, resolveEventData(this.props, {value}));
   }
 
   // 动作
@@ -453,7 +460,7 @@ export default class DateControl extends React.PureComponent<
     const {dispatchEvent} = this.props;
     const dispatcher = dispatchEvent(
       'change',
-      resolveEventData(this.props, {value: nextValue}, 'value')
+      resolveEventData(this.props, {value: nextValue})
     );
     if (dispatcher?.prevented) {
       return;
@@ -479,6 +486,7 @@ export default class DateControl extends React.PureComponent<
       largeMode,
       render,
       useMobileUI,
+      placeholder,
       ...rest
     } = this.props;
     const mobileUI = useMobileUI && isMobile();
@@ -500,6 +508,7 @@ export default class DateControl extends React.PureComponent<
       >
         <DatePicker
           {...rest}
+          placeholder={placeholder ?? this.placeholder}
           useMobileUI={useMobileUI}
           popOverContainer={
             mobileUI && env && env.getModalContainer
@@ -511,6 +520,8 @@ export default class DateControl extends React.PureComponent<
           timeFormat={timeFormat}
           format={valueFormat || format}
           {...this.state}
+          minDateRaw={this.props.minDate}
+          maxDateRaw={this.props.maxDate}
           classnames={cx}
           onRef={this.getRef}
           schedules={this.state.schedules}
@@ -530,9 +541,9 @@ export default class DateControl extends React.PureComponent<
   weight: -150
 })
 export class DateControlRenderer extends DateControl {
+  placeholder = this.props.translate('Date.placeholder');
   static defaultProps = {
     ...DateControl.defaultProps,
-    placeholder: 'Date.placeholder',
     dateFormat: 'YYYY-MM-DD',
     timeFormat: '',
     strictMode: false
@@ -543,9 +554,9 @@ export class DateControlRenderer extends DateControl {
   type: 'input-datetime'
 })
 export class DatetimeControlRenderer extends DateControl {
+  placeholder = this.props.translate('DateTime.placeholder');
   static defaultProps = {
     ...DateControl.defaultProps,
-    placeholder: 'DateTime.placeholder',
     inputFormat: 'YYYY-MM-DD HH:mm:ss',
     dateFormat: 'LL',
     timeFormat: 'HH:mm:ss',
@@ -558,9 +569,9 @@ export class DatetimeControlRenderer extends DateControl {
   type: 'input-time'
 })
 export class TimeControlRenderer extends DateControl {
+  placeholder = this.props.translate('Time.placeholder');
   static defaultProps = {
     ...DateControl.defaultProps,
-    placeholder: 'Time.placeholder',
     inputFormat: 'HH:mm',
     dateFormat: '',
     timeFormat: 'HH:mm',
@@ -573,9 +584,9 @@ export class TimeControlRenderer extends DateControl {
   type: 'input-month'
 })
 export class MonthControlRenderer extends DateControl {
+  placeholder = this.props.translate('Month.placeholder');
   static defaultProps = {
     ...DateControl.defaultProps,
-    placeholder: 'Month.placeholder',
     inputFormat: 'YYYY-MM',
     dateFormat: 'MM',
     timeFormat: '',
@@ -589,9 +600,9 @@ export class MonthControlRenderer extends DateControl {
   type: 'input-quarter'
 })
 export class QuarterControlRenderer extends DateControl {
+  placeholder = this.props.translate('Quarter.placeholder');
   static defaultProps = {
     ...DateControl.defaultProps,
-    placeholder: 'Quarter.placeholder',
     inputFormat: 'YYYY [Q]Q',
     dateFormat: 'YYYY [Q]Q',
     timeFormat: '',
@@ -605,9 +616,9 @@ export class QuarterControlRenderer extends DateControl {
   type: 'input-year'
 })
 export class YearControlRenderer extends DateControl {
+  placeholder = this.props.translate('Year.placeholder');
   static defaultProps = {
     ...DateControl.defaultProps,
-    placeholder: 'Year.placeholder',
     inputFormat: 'YYYY',
     dateFormat: 'YYYY',
     timeFormat: '',

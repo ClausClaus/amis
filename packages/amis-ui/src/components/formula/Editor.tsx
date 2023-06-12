@@ -13,13 +13,16 @@ import {
   LocaleProps,
   eachTree
 } from 'amis-core';
+import {functionDocs} from 'amis-formula';
 import {doc} from 'amis-formula/lib/doc';
+import type {FunctionDocMap} from 'amis-formula/lib/types';
 
 import {FormulaPlugin, editorFactory} from './plugin';
 import FuncList from './FuncList';
 import VariableList from './VariableList';
 import CodeMirrorEditor from '../CodeMirror';
 import {toast} from '../Toast';
+import {isMobile} from 'amis-core';
 
 export interface VariableItem {
   label: string;
@@ -131,6 +134,13 @@ export class FormulaEditor extends React.Component<
     });
 
     return funcs;
+  }
+
+  static buildCustomFunctions(map: FunctionDocMap = {}) {
+    return Object.entries(map).map(([k, items]) => ({
+      groupName: k,
+      items
+    }));
   }
 
   static defaultProps: Pick<FormulaEditorProps, 'variables' | 'evalMode'> = {
@@ -323,6 +333,7 @@ export class FormulaEditor extends React.Component<
     const customFunctions = Array.isArray(functions) ? functions : [];
     const functionList = [
       ...FormulaEditor.buildDefaultFunctions(doc),
+      ...FormulaEditor.buildCustomFunctions(functionDocs),
       ...customFunctions
     ];
 
@@ -348,7 +359,9 @@ export class FormulaEditor extends React.Component<
           />
         </section>
 
-        <section className={cx('FormulaEditor-settings')}>
+        <section
+          className={cx('FormulaEditor-settings', {'is-mobile': isMobile()})}
+        >
           <div className={cx('FormulaEditor-panel')}>
             {variableMode !== 'tabs' ? (
               <div className={cx('FormulaEditor-panel-header')}>

@@ -3,8 +3,10 @@ import {autobind, guid, JSONSchema} from 'amis-core';
 import Button from '../Button';
 import {Icon} from '../icons';
 import InputBox from '../InputBox';
-import {SchemaEditorItemCommon, SchemaEditorItemCommonProps} from './Common';
+import {SchemaEditorItemCommon} from './Common';
 import {SchemaEditorItem} from './Item';
+
+import type {SchemaEditorItemCommonProps} from './Common';
 
 export interface SchemaEditorItemObjectState {
   members: Array<{
@@ -195,7 +197,10 @@ export class SchemaEditorItemObject extends SchemaEditorItemCommon<
       showInfo,
       types,
       onTypeChange,
-      enableAdvancedSetting
+      enableAdvancedSetting,
+      popOverContainer,
+      placeholder,
+      useMobileUI
     } = this.props;
     const members = this.state.members;
 
@@ -208,10 +213,12 @@ export class SchemaEditorItemObject extends SchemaEditorItemCommon<
         {members.length ? (
           members.map((member, index) => (
             <SchemaEditorItem
+              useMobileUI={useMobileUI}
               key={member.id}
               types={types}
               onTypeChange={onTypeChange}
               enableAdvancedSetting={enableAdvancedSetting}
+              popOverContainer={popOverContainer}
               prefix={
                 <>
                   <InputBox
@@ -219,16 +226,18 @@ export class SchemaEditorItemObject extends SchemaEditorItemCommon<
                     hasError={member.hasError}
                     value={member.key || ''}
                     onChange={this.handlePropKeyChange.bind(this, index)}
-                    placeholder={__('JSONSchema.key')}
+                    placeholder={__(placeholder?.key ?? '')}
                     disabled={disabled || !!value?.$ref}
+                    useMobileUI={useMobileUI}
                   />
 
                   <InputBox
                     className={cx('SchemaEditor-title')}
                     value={member.schema.title || ''}
                     onChange={this.handlePropTitleChange.bind(this, index)}
-                    placeholder={__('JSONSchema.title')}
+                    placeholder={__(placeholder?.title ?? '')}
                     disabled={disabled || !!value?.$ref}
+                    useMobileUI={useMobileUI}
                   />
                 </>
               }
@@ -253,11 +262,12 @@ export class SchemaEditorItemObject extends SchemaEditorItemCommon<
               disabled={disabled || !!value?.$ref}
               required={member.required}
               onRequiredChange={this.handlePropRequiredChange.bind(this, index)}
+              placeholder={placeholder}
             />
           ))
         ) : (
           <div className={cx('SchemaEditorProps-placeholder')}>
-            {__('placeholder.empty')}
+            {__(placeholder?.empty ?? '')}
           </div>
         )}
 

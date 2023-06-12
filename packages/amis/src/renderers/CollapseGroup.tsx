@@ -5,7 +5,7 @@ import {CollapseGroup} from 'amis-ui';
 
 /**
  * CollapseGroup 折叠渲染器，格式说明。
- * 文档：https://baidu.gitee.io/amis/docs/components/collapse
+ * 文档：https://aisuda.bce.baidu.com/amis/zh-CN/components/collapse
  */
 export interface CollapseGroupSchema extends BaseSchema {
   /**
@@ -60,7 +60,8 @@ export class CollapseGroupRender extends React.Component<
       body,
       className,
       style,
-      render
+      render,
+      useMobileUI
     } = this.props;
     return (
       <CollapseGroup
@@ -70,6 +71,7 @@ export class CollapseGroupRender extends React.Component<
         expandIconPosition={expandIconPosition}
         className={className}
         style={style}
+        useMobileUI={useMobileUI}
       >
         {render('body', body || '')}
       </CollapseGroup>

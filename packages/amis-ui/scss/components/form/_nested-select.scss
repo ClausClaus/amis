@@ -11,6 +11,11 @@
 .#{$ns}NestedSelect {
   position: relative;
   @include input-border();
+
+  &.is-mobile {
+    text-align: right;
+  }
+
   &-optionArrowRight {
     display: inline-block;
     padding-right: var(--Form-select-icon-rigin);
@@ -45,6 +50,7 @@
 
   &-menu {
     width: px2rem(160px);
+    min-width: px2rem(100px);
     min-height: px2rem(32px);
     max-height: px2rem(175px);
     background: var(--Form-select-menu-bg);
@@ -62,16 +68,21 @@
     .#{$ns}NestedSelect-option {
       position: relative;
       padding-left: var(--gap-md);
-      min-height: var(--Form-input-height);
-      line-height: var(--Form-input-height);
+      min-height: var(--select-base-default-option-line-height);
+      line-height: var(--select-base-default-option-line-height);
       cursor: pointer;
       display: flex;
+      font-size: var(--select-base-default-option-fontSize);
+      font-weight: var(--select-base-default-option-fontWeight);
+      color: var(--select-base-default-option-color);
+      background: var(--select-base-default-option-bg-color);
 
       > .#{$ns}NestedSelect-optionLabel {
         flex: 1;
         height: px2rem(32px);
         overflow: hidden;
         text-overflow: ellipsis;
+        white-space: nowrap;
         &.is-disabled {
           cursor: not-allowed;
           color: var(--text--muted-color);
@@ -107,6 +118,6 @@
     }
   }
   &-popup {
-    height: px2rem(460px);
+    height: px2rem(340px);
   }
 }

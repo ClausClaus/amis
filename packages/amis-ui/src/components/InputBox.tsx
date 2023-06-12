@@ -1,5 +1,5 @@
 import React from 'react';
-import {ThemeProps, themeable} from 'amis-core';
+import {ThemeProps, themeable, isMobile} from 'amis-core';
 import Input from './Input';
 import {autobind, ucFirst} from 'amis-core';
 import {Icon} from './icons';
@@ -16,8 +16,9 @@ export interface InputBoxProps
   hasError?: boolean;
   placeholder?: string;
   prefix?: JSX.Element;
-  children?: JSX.Element;
+  children?: React.ReactNode | Array<React.ReactNode>;
   borderMode?: 'full' | 'half' | 'none';
+  useMobileUI?: boolean;
 }
 
 export interface InputBoxState {
@@ -83,13 +84,16 @@ export class InputBox extends React.Component<InputBoxProps, InputBoxState> {
       children,
       borderMode,
       onClick,
+      useMobileUI,
       ...rest
     } = this.props;
     const isFocused = this.state.isFocused;
+    const mobileUI = useMobileUI && isMobile();
 
     return (
       <div
         className={cx('InputBox', className, {
+          'is-mobile': mobileUI,
           'is-focused': isFocused,
           'is-disabled': disabled,
           'is-error': hasError,

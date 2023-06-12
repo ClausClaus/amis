@@ -1,8 +1,9 @@
 import omit from 'lodash/omit';
 import {RendererProps} from '../factory';
+import {ConditionGroupValue} from '../types';
 import {createObject} from '../utils/helper';
 import {RendererEvent} from '../utils/renderer-event';
-import {evalExpression} from '../utils/tpl';
+import {evalExpressionWithConditionBuilder} from '../utils/tpl';
 import {dataMapping} from '../utils/tpl-builtin';
 import {IBreakAction} from './BreakAction';
 import {IContinueAction} from './ContinueAction';
@@ -22,13 +23,14 @@ export interface ListenerAction {
   actionType: string; // 动作类型 逻辑动作|自定义（脚本支撑）|reload|url|ajax|dialog|drawer 其他扩充的组件动作
   description?: string; // 事件描述，actionType: broadcast
   componentId?: string; // 组件ID，用于直接执行指定组件的动作，指定多个组件时使用英文逗号分隔
+  componentName?: string; // 组件Name，用于直接执行指定组件的动作，指定多个组件时使用英文逗号分隔
   args?: Record<string, any>; // 动作配置，可以配置数据映射
   data?: Record<string, any> | null; // 动作数据参数，可以配置数据映射
   dataMergeMode?: 'merge' | 'override'; // 参数模式，合并或者覆盖
   outputVar?: string; // 输出数据变量名
   preventDefault?: boolean; // 阻止原有组件的动作行为
   stopPropagation?: boolean; // 阻止后续的事件处理器执行
-  expression?: string; // 执行条件
+  expression?: string | ConditionGroupValue; // 执行条件
   execOn?: string; // 执行条件，1.9.0废弃
 }
 
@@ -129,6 +131,9 @@ const getOmitActionProp = (type: string) => {
     case 'drawer':
       omitList = ['drawer'];
       break;
+    case 'confirmDialog':
+      omitList = ['confirmDialog'];
+      break;
     case 'reload':
       omitList = ['resetPage'];
       break;
@@ -149,7 +154,10 @@ export const runActions = async (
     let actionInstrance = getActionByType(actionConfig.actionType);
 
     // 如果存在指定组件ID，说明是组件专有动作
-    if (!actionInstrance && actionConfig.componentId) {
+    if (
+      !actionInstrance &&
+      (actionConfig.componentId || actionConfig.componentName)
+    ) {
       actionInstrance = getActionByType('component');
     } else if (
       actionConfig.actionType === 'url' ||
@@ -167,7 +175,6 @@ export const runActions = async (
 
     // 这些节点的子节点运行逻辑由节点内部实现
     await runAction(actionInstrance, actionConfig, renderer, event);
-
     if (event.stoped) {
       break;
     }
@@ -208,24 +215,53 @@ export const runAction = async (
   );
   // 兼容一下1.9.0之前的版本
   const expression = actionConfig.expression ?? actionConfig.execOn;
+  // 执行条件
+  let isStop = false;
 
-  if (expression && !evalExpression(expression, mergeData)) {
+  if (expression) {
+    isStop = !(await evalExpressionWithConditionBuilder(
+      expression,
+      mergeData,
+      true
+    ));
+  }
+
+  if (isStop) {
     return;
   }
 
   // 支持表达式 >=1.10.0
-  const preventDefault =
-    actionConfig.preventDefault &&
-    evalExpression(String(actionConfig.preventDefault), mergeData);
-  const stopPropagation =
-    actionConfig.stopPropagation &&
-    evalExpression(String(actionConfig.stopPropagation), mergeData);
+  let preventDefault = false;
+  if (actionConfig.preventDefault) {
+    preventDefault = await evalExpressionWithConditionBuilder(
+      actionConfig.preventDefault,
+      mergeData,
+      false
+    );
+  }
+  let stopPropagation = false;
+  if (actionConfig.stopPropagation) {
+    stopPropagation = await evalExpressionWithConditionBuilder(
+      actionConfig.stopPropagation,
+      mergeData,
+      false
+    );
+  }
+
+  let key = {
+    componentId: dataMapping(actionConfig.componentId, mergeData),
+    componentName: dataMapping(actionConfig.componentName, mergeData)
+  };
 
   // 动作配置
   const args = dataMapping(actionConfig.args, mergeData, key =>
-    ['adaptor', 'responseAdaptor', 'requestAdaptor', 'responseData'].includes(
-      key
-    )
+    [
+      'adaptor',
+      'responseAdaptor',
+      'requestAdaptor',
+      'responseData',
+      'condition'
+    ].includes(key)
   );
   const afterMappingData = dataMapping(actionConfig.data, mergeData);
 
@@ -252,22 +288,27 @@ export const runAction = async (
   console.group?.(`run action ${actionConfig.actionType}`);
   console.debug(`[${actionConfig.actionType}] action args, data`, args, data);
 
-  await actionInstrance.run(
+  let stoped = false;
+  const actionResult = await actionInstrance.run(
     {
       ...actionConfig,
       args,
-      data
+      data,
+      ...key
     },
     renderer,
     event,
     mergeData
   );
-
+  // 二次确认弹窗如果取消，则终止后续动作
+  if (actionConfig?.actionType === 'confirmDialog' && !actionResult) {
+    stoped = true;
+  }
   console.debug(`[${actionConfig.actionType}] action end event`, event);
   console.groupEnd?.();
 
   // 阻止原有动作执行
   preventDefault && event.preventDefault();
   // 阻止后续动作执行
-  stopPropagation && event.stopPropagation();
+  (stopPropagation || stoped) && event.stopPropagation();
 };

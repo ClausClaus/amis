@@ -1,17 +1,13 @@
 import {ConditionBuilderConfig} from './config';
-import {
-  ConditionBuilderFields,
-  ConditionGroupValue,
-  ConditionBuilderFuncs,
-  ConditionValue
-} from './types';
-import {ThemeProps, themeable, autobind} from 'amis-core';
+import {ConditionBuilderFields, ConditionBuilderFuncs} from './types';
+import {ThemeProps, themeable, autobind, isMobile} from 'amis-core';
 import React from 'react';
 import {Icon} from '../icons';
 import ConditionGroup from './Group';
 import ConditionItem from './Item';
 import {FormulaPickerProps} from '../formula/Picker';
 import Button from '../Button';
+import type {ConditionGroupValue, ConditionValue} from 'amis-core';
 
 export interface CBGroupOrItemProps extends ThemeProps {
   builderMode?: 'simple' | 'full';
@@ -52,6 +48,9 @@ export class CBGroupOrItem extends React.Component<CBGroupOrItemProps> {
 
   @autobind
   handlerHoverIn(e: any) {
+    if (isMobile()) {
+      return;
+    }
     e.stopPropagation();
     this.setState({
       hover: true
@@ -89,7 +88,8 @@ export class CBGroupOrItem extends React.Component<CBGroupOrItemProps> {
     return (
       <div
         className={cx(
-          `CBGroupOrItem${builderMode === 'simple' ? '-simple' : ''}`
+          `CBGroupOrItem${builderMode === 'simple' ? '-simple' : ''}`,
+          {'is-mobile': isMobile()}
         )}
         data-id={value?.id}
       >
@@ -97,7 +97,7 @@ export class CBGroupOrItem extends React.Component<CBGroupOrItemProps> {
           {value?.conjunction ? (
             <div
               className={cx('CBGroupOrItem-body-group', {
-                'is-hover': this.state.hover
+                'is-hover': this.state.hover || isMobile()
               })}
               onMouseOver={this.handlerHoverIn}
               onMouseOut={this.handlerHoverOut}

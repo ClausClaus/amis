@@ -5,7 +5,8 @@ import {
   highlight,
   FormOptionsControl,
   resolveEventData,
-  insertCustomStyle
+  CustomStyle,
+  getValueByPath
 } from 'amis-core';
 import {ActionObject} from 'amis-core';
 import Downshift, {StateChangeOptions} from 'downshift';
@@ -30,7 +31,7 @@ import type {ListenerAction} from 'amis-core';
 
 /**
  * Text 文本输入框。
- * 文档：https://baidu.gitee.io/amis/docs/components/form/text
+ * 文档：https://aisuda.bce.baidu.com/amis/zh-CN/components/form/text
  */
 export interface TextControlSchema extends FormOptionsSchema {
   type:
@@ -309,13 +310,9 @@ export default class TextControl extends React.PureComponent<
     const {dispatchEvent, value} = this.props;
     const rendererEvent = await dispatchEvent(
       'click',
-      resolveEventData(
-        this.props,
-        {
-          value
-        },
-        'value'
-      )
+      resolveEventData(this.props, {
+        value
+      })
     );
 
     if (rendererEvent?.prevented) {
@@ -337,13 +334,9 @@ export default class TextControl extends React.PureComponent<
 
     const rendererEvent = await dispatchEvent(
       'focus',
-      resolveEventData(
-        this.props,
-        {
-          value
-        },
-        'value'
-      )
+      resolveEventData(this.props, {
+        value
+      })
     );
 
     if (rendererEvent?.prevented) {
@@ -369,13 +362,9 @@ export default class TextControl extends React.PureComponent<
 
     const rendererEvent = await dispatchEvent(
       'blur',
-      resolveEventData(
-        this.props,
-        {
-          value
-        },
-        'value'
-      )
+      resolveEventData(this.props, {
+        value
+      })
     );
 
     if (rendererEvent?.prevented) {
@@ -390,7 +379,7 @@ export default class TextControl extends React.PureComponent<
     const {creatable, multiple, onChange, dispatchEvent} = this.props;
     const rendererEvent = await dispatchEvent(
       'change',
-      resolveEventData(this.props, {value}, 'value')
+      resolveEventData(this.props, {value})
     );
 
     if (rendererEvent?.prevented) {
@@ -454,7 +443,7 @@ export default class TextControl extends React.PureComponent<
 
       const rendererEvent = await dispatchEvent(
         'enter',
-        resolveEventData(this.props, {value}, 'value')
+        resolveEventData(this.props, {value})
       );
 
       if (rendererEvent?.prevented) {
@@ -570,7 +559,7 @@ export default class TextControl extends React.PureComponent<
 
     const rendererEvent = await dispatchEvent(
       'change',
-      resolveEventData(this.props, {value}, 'value')
+      resolveEventData(this.props, {value})
     );
 
     if (rendererEvent?.prevented) {
@@ -1051,50 +1040,105 @@ export default class TextControl extends React.PureComponent<
     );
   }
 
+  /**
+   * 处理input的自定义样式
+   */
+  @autobind
+  formatInputThemeCss() {
+    const {themeCss, css} = this.props;
+    const inputFontThemeCss: any = {inputControlClassName: {}};
+    const inputControlClassNameObject =
+      (themeCss || css)?.inputControlClassName || {};
+    for (let key in inputControlClassNameObject) {
+      if (~key.indexOf('font')) {
+        inputFontThemeCss.inputControlClassName[key] =
+          inputControlClassNameObject[key];
+      }
+    }
+    return inputFontThemeCss;
+  }
+
   @supportStatic()
   render(): JSX.Element {
     const {
       options,
       source,
       autoComplete,
+      themeCss,
       css,
       inputControlClassName,
       id,
-      addOnClassName
+      addOnClassName,
+      env,
+      classPrefix: ns
     } = this.props;
     let input =
       autoComplete !== false && (source || options?.length || autoComplete)
         ? this.renderSugestMode()
         : this.renderNormal();
 
-    insertCustomStyle(
-      css,
-      [
-        {
-          key: 'inputControlClassName',
-          value: inputControlClassName,
-          weights: {
-            active: {
-              pre: 'is-focused .'
-            }
-          }
-        }
-      ],
-      id
-    );
+    return (
+      <>
+        {this.renderBody(input)}
+        <CustomStyle
+          config={{
+            themeCss: themeCss || css,
+            classNames: [
+              {
+                key: 'inputControlClassName',
+                value: inputControlClassName,
+                weights: {
+                  active: {
+                    pre: `${ns}TextControl.is-focused > .${inputControlClassName}, `
+                  }
+                }
+              }
+            ],
+            id: id
+          }}
+          env={env}
+        />
+        <CustomStyle
+          config={{
+            themeCss: this.formatInputThemeCss(),
+            classNames: [
+              {
+                key: 'inputControlClassName',
+                value: inputControlClassName,
+                weights: {
+                  default: {
+                    inner: 'input'
+                  },
+                  hover: {
+                    inner: 'input'
+                  },
+                  active: {
+                    pre: `${ns}TextControl.is-focused > .${inputControlClassName}, `,
+                    inner: 'input'
+                  }
+                }
+              }
+            ],
+            id: id + '-inner'
+          }}
+          env={env}
+        />
 
-    insertCustomStyle(
-      css,
-      [
-        {
-          key: 'addOnClassName',
-          value: addOnClassName
-        }
-      ],
-      id + '-addOn'
+        <CustomStyle
+          config={{
+            themeCss: themeCss || css,
+            classNames: [
+              {
+                key: 'addOnClassName',
+                value: addOnClassName
+              }
+            ],
+            id: id + '-addOn'
+          }}
+          env={env}
+        />
+      </>
     );
-
-    return this.renderBody(input);
   }
 }
 

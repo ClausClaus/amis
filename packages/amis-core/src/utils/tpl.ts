@@ -1,12 +1,17 @@
-import {createObject} from './helper';
 import {register as registerBulitin, getFilters} from './tpl-builtin';
 import {register as registerLodash} from './tpl-lodash';
 import {parse, evaluate} from 'amis-formula';
+import {resolveCondition} from './resolveCondition';
 
 export interface Enginer {
   test: (tpl: string) => boolean;
   removeEscapeToken?: (tpl: string) => string;
   compile: (tpl: string, data: object, ...rest: Array<any>) => string;
+  asyncCompile: (
+    tpl: string,
+    data: object,
+    ...rest: Array<any>
+  ) => Promise<string>;
 }
 
 const enginers: {
@@ -31,6 +36,28 @@ export function filter(
     let enginer = enginers[keys[i]];
     if (enginer.test(tpl)) {
       return enginer.compile(tpl, data, ...rest);
+    } else if (enginer.removeEscapeToken) {
+      tpl = enginer.removeEscapeToken(tpl);
+    }
+  }
+
+  return tpl;
+}
+
+export function asyncFilter(
+  tpl?: any,
+  data: object = {},
+  ...rest: Array<any>
+): Promise<string> {
+  if (!tpl || typeof tpl !== 'string') {
+    return Promise.resolve('');
+  }
+
+  let keys = Object.keys(enginers);
+  for (let i = 0, len = keys.length; i < len; i++) {
+    let enginer = enginers[keys[i]];
+    if (enginer.test(tpl)) {
+      return enginer.asyncCompile(tpl, data, ...rest);
     } else if (enginer.removeEscapeToken) {
       tpl = enginer.removeEscapeToken(tpl);
     }
@@ -99,6 +126,25 @@ export function evalExpression(expression: string, data?: object): boolean {
   }
 }
 
+/**
+ * 解析表达式（支持condition-builder）
+ * @param expression 表达式 or condition-builder对象
+ * @param data 上下文
+ * @returns
+ */
+export async function evalExpressionWithConditionBuilder(
+  expression: any,
+  data?: object,
+  defaultResult?: boolean
+): Promise<boolean> {
+  // 支持ConditionBuilder
+  if (Object.prototype.toString.call(expression) === '[object Object]') {
+    return await resolveCondition(expression, data, defaultResult);
+  }
+
+  return evalExpression(String(expression), data);
+}
+
 const AST_CACHE: {[key: string]: any} = {};
 function evalFormula(expression: string, data: any) {
   const ast =
@@ -156,6 +202,7 @@ export function evalJS(js: string, data: object): any {
   registerTplEnginer(info.name, {
     test: info.test,
     compile: info.compile,
+    asyncCompile: info.asyncCompile,
     removeEscapeToken: info.removeEscapeToken
   });
 });

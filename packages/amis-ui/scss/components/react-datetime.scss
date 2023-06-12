@@ -15,6 +15,14 @@
   background: #fff;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
   border: 1px solid #f9f9f9;
+
+  &.is-mobile-year {
+    width: px2rem(184px);
+  }
+
+  &.is-mobile-embed {
+    width: px2rem(240px);
+  }
 }
 
 .rdtPickerNotDays {
@@ -62,7 +70,10 @@
   cursor: pointer;
   > span {
     display: inline-block;
-    border-radius: 2px;
+    border-radius: var(--inputDate-default-option-top-left-border-radius)
+      var(--inputDate-default-option-top-right-border-radius)
+      var(--inputDate-default-option-bottom-right-border-radius)
+      var(--inputDate-default-option-bottom-left-border-radius);
     height: 24px;
     width: 24px;
   }
@@ -77,7 +88,10 @@
 }
 .rdtPicker td.rdtOld,
 .rdtPicker td.rdtNew {
-  color: #b8babf;
+  color: var(--inputDate-disabled-option-color);
+  span {
+    background: var(--inputDate-disabled-option-bg-color);
+  }
 }
 .rdtPicker td.rdtToday {
   position: relative;

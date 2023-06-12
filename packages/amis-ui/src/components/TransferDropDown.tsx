@@ -1,12 +1,15 @@
 import {localeable} from 'amis-core';
 import {themeable} from 'amis-core';
-import {Transfer, TransferProps} from './Transfer';
+import {Transfer, TransferProps, TransferState} from './Transfer';
 import {uncontrollable, autobind} from 'amis-core';
 import React from 'react';
 import ResultBox from './ResultBox';
 import {Icon} from './icons';
 import InputBox from './InputBox';
-import PopOverContainer from './PopOverContainer';
+import PopOverContainer, {
+  OverlayAlignType,
+  PopOverOverlay
+} from './PopOverContainer';
 import {isMobile} from 'amis-core';
 
 import type {TooltipObject} from './TooltipWrapper';
@@ -20,12 +23,55 @@ export interface TransferDropDownProps extends TransferProps {
   itemRender: (value: any) => JSX.Element | string;
   maxTagCount?: number;
   overflowTagPopover?: TooltipObject;
+  overlayAlign?: OverlayAlignType;
+  overlayWidth?: string;
+  overlay?: PopOverOverlay;
 }
 
 export class TransferDropDown extends Transfer<TransferDropDownProps> {
+  constructor(props: TransferDropDownProps) {
+    super(props);
+    this.state = {
+      tempValue: props.value,
+      inputValue: '',
+      searchResult: null,
+      isTreeDeferLoad: false,
+      resultSelectMode: 'list'
+    };
+  }
+
+  componentDidUpdate(prevProps: TransferDropDownProps) {
+    if (this.props.value !== prevProps.value) {
+      this.setState({
+        tempValue: this.props.value
+      });
+    }
+  }
+
   @autobind
   handleAfterPopoverHide() {
     this.setState({inputValue: '', searchResult: null});
+  }
+
+  @autobind
+  handleChange(value: any, onClose: () => void) {
+    const {multiple, onChange, useMobileUI} = this.props;
+    const mobileUI = useMobileUI && isMobile();
+
+    if (mobileUI) {
+      this.setState({tempValue: value});
+    } else {
+      onChange?.(value);
+      if (!multiple) {
+        onClose();
+      }
+    }
+  }
+
+  @autobind
+  onConfirm() {
+    const {onChange} = this.props;
+    onChange?.(this.state.tempValue as (typeof Option)[]);
   }
 
   render() {
@@ -48,7 +94,8 @@ export class TransferDropDown extends Transfer<TransferDropDownProps> {
       overflowTagPopover,
       itemHeight,
       virtualThreshold,
-      showInvalidMatch
+      showInvalidMatch,
+      overlay
     } = this.props;
     const {inputValue, searchResult} = this.state;
     const mobileUI = useMobileUI && isMobile();
@@ -58,7 +105,11 @@ export class TransferDropDown extends Transfer<TransferDropDownProps> {
         onAfterHide={this.handleAfterPopoverHide}
         useMobileUI={useMobileUI}
         popOverContainer={popOverContainer}
+        overlayWidth={overlay && overlay?.width}
+        align={overlay && overlay?.align}
         popOverClassName={cx('TransferDropDown-popover')}
+        showConfirm
+        onConfirm={this.onConfirm}
         popOverRender={({onClose}) => (
           <div
             className={cx('TransferDropDown-content', {
@@ -73,6 +124,7 @@ export class TransferDropDown extends Transfer<TransferDropDownProps> {
                   placeholder={placeholder ?? __('Transfer.searchKeyword')}
                   clearable={false}
                   onKeyDown={this.handleSearchKeyDown}
+                  useMobileUI
                 >
                   {searchResult !== null ? (
                     <a onClick={this.handleSeachCancel}>
@@ -87,24 +139,14 @@ export class TransferDropDown extends Transfer<TransferDropDownProps> {
             {searchResult !== null
               ? this.renderSearchResult({
                   ...this.props,
-                  value,
-                  onChange: multiple
-                    ? onChange
-                    : (value: any) => {
-                        onClose();
-                        onChange?.(value);
-                      },
+                  value: this.state.tempValue,
+                  onChange: value => this.handleChange(value, onClose),
                   multiple
                 })
               : this.renderOptions({
                   ...this.props,
-                  value,
-                  onChange: multiple
-                    ? onChange
-                    : (value: any) => {
-                        onClose();
-                        onChange?.(value);
-                      },
+                  value: this.state.tempValue,
+                  onChange: value => this.handleChange(value, onClose),
                   multiple
                 })}
           </div>

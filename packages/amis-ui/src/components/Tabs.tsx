@@ -15,7 +15,7 @@ import {Icon} from './icons';
 import debounce from 'lodash/debounce';
 import {findDOMNode} from 'react-dom';
 import TooltipWrapper from './TooltipWrapper';
-import {resizeSensor} from 'amis-core';
+import {resizeSensor, isMobile} from 'amis-core';
 import PopOverContainer from './PopOverContainer';
 
 import Sortable from 'sortablejs';
@@ -45,6 +45,8 @@ export interface TabProps extends ThemeProps {
   iconPosition?: 'left' | 'right';
   disabled?: boolean | string;
   eventKey: string | number;
+  prevKey?: string | number;
+  nextKey?: string | number;
   tab?: Schema;
   className?: string;
   activeKey?: string | number;
@@ -52,11 +54,52 @@ export interface TabProps extends ThemeProps {
   mountOnEnter?: boolean;
   unmountOnExit?: boolean;
   toolbar?: React.ReactNode;
+  children?: React.ReactNode | Array<React.ReactNode>;
+  useMobileUI?: boolean;
+  swipeable?: boolean;
+  onSelect?: (eventKey: string | number) => void;
 }
 
 class TabComponent extends React.PureComponent<TabProps> {
   contentDom: any;
+  touch: any = {};
+  touchStartTime: number;
   contentRef = (ref: any) => (this.contentDom = ref);
+
+  @autobind
+  onTouchStart(event: TouchEvent) {
+    this.touch.startX = event.touches[0].clientX;
+    this.touch.startY = event.touches[0].clientY;
+    this.touchStartTime = Date.now();
+  }
+
+  @autobind
+  onTouchMove(event: TouchEvent) {
+    const touch = event.touches[0];
+    const newState = {...this.touch};
+
+    newState.deltaX = touch.clientX < 0 ? 0 : touch.clientX - newState.startX;
+    newState.deltaY = touch.clientY - newState.startY;
+    newState.offsetX = Math.abs(newState.deltaX);
+    newState.offsetY = Math.abs(newState.deltaY);
+    this.touch = newState;
+  }
+
+  @autobind
+  onTouchEnd() {
+    const duration = Date.now() - this.touchStartTime;
+    const speed = this.touch.deltaX / duration;
+    const shouldSwipe = Math.abs(speed) > 0.25;
+    const {prevKey, nextKey, onSelect} = this.props;
+
+    if (shouldSwipe) {
+      if (this.touch.deltaX > 0) {
+        prevKey !== undefined && onSelect?.(prevKey);
+      } else {
+        nextKey && onSelect?.(nextKey);
+      }
+    }
+  }
 
   render() {
     const {
@@ -67,8 +110,12 @@ class TabComponent extends React.PureComponent<TabProps> {
       eventKey,
       activeKey,
       children,
-      className
+      className,
+      swipeable,
+      useMobileUI
     } = this.props;
+
+    const mobileUI = useMobileUI && isMobile();
 
     return (
       <Transition
@@ -90,6 +137,10 @@ class TabComponent extends React.PureComponent<TabProps> {
                 'Tabs-pane',
                 className
               )}
+              onTouchStart={swipeable && mobileUI && this.onTouchStart}
+              onTouchMove={swipeable && mobileUI && this.onTouchMove}
+              onTouchEnd={swipeable && mobileUI && this.onTouchEnd}
+              onTouchCancel={swipeable && mobileUI && this.onTouchEnd}
             >
               {children}
             </div>
@@ -130,6 +181,8 @@ export interface TabsProps extends ThemeProps, LocaleProps {
   collapseOnExceed?: number;
   collapseBtnLabel?: string;
   popOverContainer?: any;
+  children?: React.ReactNode | Array<React.ReactNode>;
+  useMobileUI?: boolean;
 }
 
 export interface IDragInfo {
@@ -244,21 +297,24 @@ export class Tabs extends React.Component<TabsProps, any> {
         activeKey: this.props.activeKey,
         children: Array.isArray(this.props.children)
           ? this.props.children!.map(item => ({
-              key: item?.props.key,
-              eventKey: item?.props.eventKey,
-              label: item?.props.label
+              eventKey: (item as JSX.Element)?.props?.eventKey,
+              // 这里 title 可能是 React.ReactNode，只对比 string
+              title:
+                typeof (item as JSX.Element)?.props?.title === 'string'
+                  ? (item as JSX.Element).props.title
+                  : ''
             }))
-          : this.props.children
+          : []
       },
       {
         activeKey: preProps.activeKey,
         children: Array.isArray(preProps.children)
           ? preProps.children!.map((item: any) => ({
-              key: item?.props.key,
-              eventKey: item?.props.eventKey,
-              label: item?.props.label
+              eventKey: item?.props?.eventKey,
+              title:
+                typeof item?.props?.title === 'string' ? item.props.title : ''
             }))
-          : preProps.children
+          : []
       }
     );
 
@@ -266,6 +322,29 @@ export class Tabs extends React.Component<TabsProps, any> {
     if (!this.scroll && !this.draging && isTabsModified) {
       this.computedWidth();
     }
+
+    // 移动端取消箭头切换，改为滚动切换激活项居中
+    const {classPrefix: ns, activeKey, useMobileUI} = this.props;
+    const mobileUI = useMobileUI && isMobile();
+    if (mobileUI && preProps.activeKey !== activeKey) {
+      const {classPrefix: ns} = this.props;
+      const dom = findDOMNode(this) as HTMLElement;
+      const activeTab = dom.querySelector(
+        `.${ns}Tabs-link.is-active`
+      ) as HTMLElement;
+      const parentWidth = (activeTab.parentNode?.parentNode as any).offsetWidth;
+      const offsetLeft = activeTab.offsetLeft;
+      const offsetWidth = activeTab.offsetWidth;
+      if (activeTab.parentNode) {
+        (activeTab.parentNode as any).scrollLeft =
+          offsetLeft > parentWidth
+            ? (offsetLeft / parentWidth) * parentWidth -
+              parentWidth / 2 +
+              offsetWidth / 2
+            : offsetLeft - parentWidth / 2 + offsetWidth / 2;
+      }
+    }
+
     this.scroll = false;
   }
 
@@ -492,6 +571,11 @@ export class Tabs extends React.Component<TabsProps, any> {
     this.scroll = true;
   }
 
+  // 处理 hash 作为 key 时重复的问题
+  generateTabKey(hash: any, eventKey: any, index: number) {
+    return (hash === eventKey ? 'hash-' : '') + (eventKey ?? index);
+  }
+
   renderNav(child: any, index: number, showClose: boolean) {
     if (!child) {
       return;
@@ -516,7 +600,8 @@ export class Tabs extends React.Component<TabsProps, any> {
       title,
       toolbar,
       tabClassName,
-      closable: tabClosable
+      closable: tabClosable,
+      hash
     } = child.props;
 
     const {editingIndex, editInputText} = this.state;
@@ -572,7 +657,7 @@ export class Tabs extends React.Component<TabsProps, any> {
           disabled ? 'is-disabled' : '',
           tabClassName
         )}
-        key={eventKey ?? index}
+        key={this.generateTabKey(hash, eventKey, index)}
         onClick={() => (disabled ? '' : this.handleSelect(eventKey))}
         onDoubleClick={() => {
           editable && this.handleStartEdit(index, title);
@@ -622,14 +707,15 @@ export class Tabs extends React.Component<TabsProps, any> {
       return;
     }
 
+    const {hash, eventKey} = child?.props || {};
+
     const {activeKey: activeKeyProp, classnames} = this.props;
-    const eventKey = child.props.eventKey;
     const activeKey =
       activeKeyProp === undefined && index === 0 ? eventKey : activeKeyProp;
 
     return React.cloneElement(child, {
       ...child.props,
-      key: eventKey,
+      key: this.generateTabKey(hash, eventKey, index),
       classnames: classnames,
       activeKey: activeKey
     });
@@ -748,9 +834,11 @@ export class Tabs extends React.Component<TabsProps, any> {
       addable,
       draggable,
       sidePosition,
-      addBtnText
+      addBtnText,
+      useMobileUI
     } = this.props;
 
+    const mobileUI = useMobileUI && isMobile();
     const {isOverflow} = this.state;
     if (!Array.isArray(children)) {
       return null;
@@ -799,10 +887,12 @@ export class Tabs extends React.Component<TabsProps, any> {
                 isOverflow && 'Tabs-linksContainer--overflow'
               )}
             >
-              {this.renderArrow('left')}
+              {!mobileUI ? this.renderArrow('left') : null}
               <div className={cx('Tabs-linksContainer-main')}>
                 <ul
-                  className={cx('Tabs-links', linksClassName)}
+                  className={cx('Tabs-links', linksClassName, {
+                    'is-mobile': mobileUI
+                  })}
                   role="tablist"
                   ref={this.navMain}
                 >
@@ -811,13 +901,18 @@ export class Tabs extends React.Component<TabsProps, any> {
                   {!isOverflow && toolButtons}
                 </ul>
               </div>
-              {this.renderArrow('right')}
+              {!mobileUI ? this.renderArrow('right') : null}
             </div>
             {isOverflow && toolButtons}
           </div>
         ) : (
           <div className={cx('Tabs-linksWrapper')}>
-            <ul className={cx('Tabs-links', linksClassName)} role="tablist">
+            <ul
+              className={cx('Tabs-links', linksClassName, {
+                'is-mobile': mobileUI
+              })}
+              role="tablist"
+            >
               {this.renderNavs()}
               {additionBtns}
               {toolbar}

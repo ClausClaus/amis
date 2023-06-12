@@ -21,7 +21,7 @@ import {
 } from 'amis-core';
 /**
  * Mapping 映射展示控件。
- * 文档：https://baidu.gitee.io/amis/docs/components/mapping
+ * 文档：https://aisuda.bce.baidu.com/amis/zh-CN/components/mapping
  */
 export interface MappingSchema extends BaseSchema {
   /**
@@ -85,7 +85,14 @@ export const Store = StoreNode.named('MappingStore')
 
           if (ret.ok) {
             const data = normalizeApiResponseData(ret.data);
-            (self as any).setMap(data);
+
+            (self as any).setMap(
+              Array.isArray(data.options)
+                ? data.options
+                : Array.isArray(data.items)
+                ? data.items
+                : data
+            );
           } else {
             throw new Error(ret.msg || 'fetch error');
           }
@@ -107,15 +114,14 @@ export const Store = StoreNode.named('MappingStore')
             } else if (isObject(now)) {
               let keys = Object.keys(now);
               if (
-                keys.length === 1
-                || (keys.length == 2 && keys.includes('$$id'))
+                keys.length === 1 ||
+                (keys.length == 2 && keys.includes('$$id'))
               ) {
                 // 针对amis-editor的特殊处理
                 keys = keys.filter(key => key !== '$$id');
                 // 单key 数组对象
                 res[keys[0]] = now[keys[0]];
-              }
-              else if (keys.length > 1) {
+              } else if (keys.length > 1) {
                 // 多key 数组对象
                 res[now[self.valueField]] = now;
               }
@@ -169,7 +175,11 @@ export const MappingField = withStore(props =>
     componentDidUpdate(prevProps: MappingProps) {
       const props = this.props;
       const {store, source, data} = this.props;
-      store.syncProps(props, prevProps, ['valueField', 'map']);
+      store.syncProps(
+        props,
+        prevProps,
+        source ? ['valueField'] : ['valueField', 'map']
+      );
 
       if (isPureVariable(source)) {
         const prev = resolveVariableAndFilter(
@@ -207,13 +217,7 @@ export const MappingField = withStore(props =>
     }
 
     renderSingleValue(key: any, reactKey?: number, needStyle?: boolean) {
-      const {
-        className,
-        style,
-        placeholder,
-        classnames: cx,
-        store
-      } = this.props;
+      const {className, style, placeholder, classnames: cx, store} = this.props;
       let viewValue: React.ReactNode = (
         <span className="text-muted">{placeholder}</span>
       );
@@ -238,19 +242,18 @@ export const MappingField = withStore(props =>
       }
 
       return (
-        <span key={`map-${reactKey}`} className={cx('MappingField', className)} style={curStyle}>
+        <span
+          key={`map-${reactKey}`}
+          className={cx('MappingField', className)}
+          style={curStyle}
+        >
           {viewValue}
         </span>
       );
     }
 
     renderViewValue(value: any) {
-      const {
-        render,
-        itemSchema,
-        data,
-        labelField
-      } = this.props;
+      const {render, itemSchema, data, labelField} = this.props;
 
       if (!itemSchema) {
         let label = value;
@@ -267,20 +270,38 @@ export const MappingField = withStore(props =>
             label = value[labelField || 'label'];
           }
         }
+        // 处理 table column 渲染 mapping 的值是 tagSchema 不正常渲染的情况
+        if (
+          isObject(label) &&
+          label.type === 'tag' &&
+          !isObject(label.label) &&
+          label.label != null
+        ) {
+          return render('mapping-tag', label, {
+            // 避免渲染tag时从 props.value 取值而无法渲染 label
+            value: null
+          });
+        }
         return render('tpl', label);
       }
-
       return render('mappingItemSchema', itemSchema, {
-        data: createObject(
-          data,
-          isObject(value) ? value : {item: value}
-        )
+        data: createObject(data, isObject(value) ? value : {item: value}),
+        ...((itemSchema as any)?.type === 'tag' ? {value: null} : {})
       });
     }
 
     render() {
-      const {style} = this.props;
-      const mapKey = getPropValue(this.props);
+      const {style, defaultValue, data} = this.props;
+      let mapKey = getPropValue(this.props);
+      // 让默认值支持表达式
+      if (
+        defaultValue &&
+        isPureVariable(defaultValue) &&
+        defaultValue === mapKey
+      ) {
+        mapKey = resolveVariableAndFilter(defaultValue, data, '| raw');
+      }
+
       if (Array.isArray(mapKey)) {
         return (
           <span style={style}>

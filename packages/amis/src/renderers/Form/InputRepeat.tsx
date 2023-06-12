@@ -11,7 +11,7 @@ import {FormItem, FormControlProps, FormBaseControl} from 'amis-core';
 
 /**
  * Repeat
- * 文档：https://baidu.gitee.io/amis/docs/components/form/repeat
+ * 文档：https://aisuda.bce.baidu.com/amis/zh-CN/components/form/repeat
  */
 export interface RepeatControlSchema extends FormBaseControlSchema {
   type: 'input-repeat';
@@ -74,6 +74,7 @@ export default class RepeatControl extends React.Component<RepeatProps, any> {
       placeholder,
       disabled,
       classPrefix: ns,
+      useMobileUI,
       translate: __
     } = this.props;
 
@@ -216,6 +217,7 @@ export default class RepeatControl extends React.Component<RepeatProps, any> {
             searchable={false}
             disabled={disabled}
             joinValues={false}
+            useMobileUI={useMobileUI}
           />
         </div>
       </div>

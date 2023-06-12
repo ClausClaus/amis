@@ -9,6 +9,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
   <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
   <link rel="stylesheet" href="./static/iconfont.css" />
+  <link rel="stylesheet" href="./static/officefont.css" />
   <link rel="stylesheet" href="@fortawesome/fontawesome-free/css/all.css" />
   <link rel="stylesheet" href="@fortawesome/fontawesome-free/css/v4-shims.css" />
   <link rel="stylesheet" href="prismjs/themes/prism.css" />
@@ -24,7 +25,6 @@
       width: 100%;
       height: 100%;
     }
-
   </style>
   <script type="text/x-jsx">
       // gitee 最近特别慢
@@ -90,7 +90,28 @@
 <body>
   <div id="root" class="app-wrapper"></div>
   <script src="./mod.js"></script>
+  <script type="text/javascript">
+    if (location.hostname !== 'localhost') {
+      var _hmt = _hmt || [];
 
+      // 百度统计
+      (function () {
+        var hm = document.createElement('script');
+        hm.src =
+          'https://hm.baidu.com/hm.js?286766a21abb57abefedbd5257a26dc8';
+        var s = document.getElementsByTagName('script')[0];
+        s.parentNode.insertBefore(hm, s);
+      })();
+    }
+
+    window.enableAMISDebug = true;
+
+    /* @require ./index.jsx 标记为同步依赖，提前加载 */
+    amis.require(['./index.jsx'], function (app) {
+      var initialState = {};
+      app.bootstrap(document.getElementById('root'), initialState);
+    });
+  </script>
 </body>
 
 </html>

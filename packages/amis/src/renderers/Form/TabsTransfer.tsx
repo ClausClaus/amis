@@ -18,10 +18,11 @@ import {BaseSelection} from 'amis-ui/lib/components/Selection';
 import {ActionObject, toNumber} from 'amis-core';
 import type {ItemRenderStates} from 'amis-ui/lib/components/Selection';
 import {supportStatic} from './StaticHoc';
+import {matchSorter} from 'match-sorter';
 
 /**
  * TabsTransfer
- * 文档：https://baidu.gitee.io/amis/docs/components/form/tabs-transfer
+ * 文档：https://aisuda.bce.baidu.com/amis/zh-CN/components/form/tabs-transfer
  */
 export interface TabsTransferControlSchema
   extends Omit<TransferControlSchema, 'type'>,
@@ -119,16 +120,14 @@ export class BaseTabsTransferRenderer<
         return [];
       }
     } else if (term) {
-      const regexp = string2regExp(term);
-
       return filterTree(
         options,
-        (option: Option) => {
+        (option: Option, key: number, level: number, paths: Array<Option>) => {
           return !!(
             (Array.isArray(option.children) && option.children.length) ||
-            (option[(valueField as string) || 'value'] &&
-              (regexp.test(option[(labelField as string) || 'label']) ||
-                regexp.test(option[(valueField as string) || 'value'])))
+            !!matchSorter([option].concat(paths), term, {
+              keys: [labelField || 'label', valueField || 'value']
+            }).length
           );
         },
         0,
@@ -218,15 +217,11 @@ export class BaseTabsTransferRenderer<
     // 触发渲染器事件
     const rendererEvent = await dispatchEvent(
       'change',
-      resolveEventData(
-        this.props,
-        {
-          value: newValue,
-          options,
-          items: options // 为了保持名字统一
-        },
-        'value'
-      )
+      resolveEventData(this.props, {
+        value: newValue,
+        options,
+        items: options // 为了保持名字统一
+      })
     );
     if (rendererEvent?.prevented) {
       return;
@@ -303,7 +298,11 @@ export class TabsTransferRenderer extends BaseTabsTransferRenderer<TabsTransferP
       itemHeight,
       virtualThreshold,
       onlyChildren,
-      loadingConfig
+      loadingConfig,
+      valueField = 'value',
+      labelField = 'label',
+      data,
+      useMobileUI
     } = this.props;
 
     return (
@@ -331,6 +330,10 @@ export class TabsTransferRenderer extends BaseTabsTransferRenderer<TabsTransferP
             toNumber(itemHeight) > 0 ? toNumber(itemHeight) : undefined
           }
           virtualThreshold={virtualThreshold}
+          labelField={labelField}
+          valueField={valueField}
+          ctx={data}
+          useMobileUI={useMobileUI}
         />
 
         <Spinner

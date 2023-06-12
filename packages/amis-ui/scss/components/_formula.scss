@@ -63,6 +63,16 @@
     justify-content: space-between;
     height: #{px2rem(250px)};
     margin-top: #{px2rem(10px)};
+
+    &:not(.is-mobile) > div {
+      width: 0;
+    }
+
+    &.is-mobile {
+      width: 100%;
+      overflow-x: scroll;
+      overflow-y: hidden;
+    }
   }
 
   &-settings.only-variable {
@@ -218,10 +228,16 @@
       display: flex;
       flex-flow: row nowrap;
       justify-content: space-between;
+      align-items: center;
       white-space: nowrap;
 
       & > label {
         white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        flex: 1;
+        width: 0;
+        display: inline-block;
       }
 
       &-tag {
@@ -231,6 +247,9 @@
         border-radius: var(--borderRadius);
         background: #f5f5f5;
         color: var(--black);
+        font-size: var(--fontSizeSm);
+        line-height: #{px2rem(24px)};
+        height: #{px2rem(24px)};
       }
     }
     .#{$ns}GroupedSelection {
@@ -375,6 +394,16 @@
   flex-flow: row nowrap;
   justify-content: space-between;
   align-items: center;
+
+  &-popup {
+    height: px2rem(580px);
+
+    &-inner {
+      width: 100%;
+      box-sizing: border-box;
+      padding: 0 px2rem(16px);
+    }
+  }
 
   &-input {
     flex: 1;

@@ -8,7 +8,7 @@ import {supportStatic} from './StaticHoc';
 
 /**
  * MonthRange 月范围控件
- * 文档：https://baidu.gitee.io/amis/docs/components/form/month-range
+ * 文档：https://aisuda.bce.baidu.com/amis/zh-CN/components/form/month-range
  */
 
 export interface MonthRangeControlSchema
@@ -64,7 +64,9 @@ export class MonthRangeControlRenderer extends MonthRangeControl {
     joinValues: true,
     delimiter: ',',
     timeFormat: '',
-    ranges: 'thismonth,prevmonth',
+    /** shortcuts的兼容配置 */
+    ranges: '',
+    shortcuts: 'thismonth,prevmonth',
     animation: true
   };
 }

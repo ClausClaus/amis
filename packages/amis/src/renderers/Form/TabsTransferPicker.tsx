@@ -12,7 +12,7 @@ import {supportStatic} from './StaticHoc';
 
 /**
  * TabsTransferPicker 穿梭器的弹框形态
- * 文档：https://baidu.gitee.io/amis/docs/components/form/tabs-transfer-picker
+ * 文档：https://aisuda.bce.baidu.com/amis/zh-CN/components/form/tabs-transfer-picker
  */
 export interface TabsTransferPickerControlSchema
   extends Omit<TabsTransferControlSchema, 'type'>,
@@ -47,7 +47,7 @@ export class TabsTransferPickerRenderer extends BaseTabsTransferRenderer<TabsTra
   @autobind
   dispatchEvent(name: string) {
     const {dispatchEvent, value} = this.props;
-    dispatchEvent(name, resolveEventData(this.props, {value}, 'value'));
+    dispatchEvent(name, resolveEventData(this.props, {value}));
   }
 
   @autobind
@@ -104,7 +104,10 @@ export class TabsTransferPickerRenderer extends BaseTabsTransferRenderer<TabsTra
       leftOptions,
       itemHeight,
       virtualThreshold,
-      loadingConfig
+      loadingConfig,
+      labelField = 'label',
+      valueField = 'value',
+      useMobileUI
     } = this.props;
 
     return (
@@ -135,6 +138,9 @@ export class TabsTransferPickerRenderer extends BaseTabsTransferRenderer<TabsTra
             toNumber(itemHeight) > 0 ? toNumber(itemHeight) : undefined
           }
           virtualThreshold={virtualThreshold}
+          labelField={labelField}
+          valueField={valueField}
+          useMobileUI={useMobileUI}
         />
 
         <Spinner

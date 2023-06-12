@@ -6,7 +6,7 @@
 import React from 'react';
 import {eachTree, Payload, themeable, ThemeProps} from 'amis-core';
 import {LocaleProps, localeable} from 'amis-core';
-import {ResultBox} from '.';
+import ResultBox from './ResultBox';
 import type {Option} from 'amis-core';
 import Sortable from 'sortablejs';
 import PopUp from './PopUp';
@@ -813,6 +813,7 @@ export class UserSelect extends React.Component<
               onChange={this.handleSearch}
               placeholder={searchPlaceholder}
               clearable={false}
+              useMobileUI
             >
               {this.state.isSearch ? (
                 <a onClick={this.handleSeachCancel}>

@@ -7,77 +7,92 @@ import replace from '@rollup/plugin-replace';
 import fis3 from './scripts/fis3plugin';
 import markdown from './scripts/markdownPlugin';
 import mockApi from './scripts/mockApiPlugin';
+import transformMobileHtml from './scripts/transformMobileHtml';
 
 // https://vitejs.dev/config/
-const viteConfig = defineConfig(args => {
-  console.log('🚀 ~ file: vite.config.ts:13 ~ defineConfig ~ args', args);
-  return {
-    plugins: [
-      fis3(),
-      markdown(),
-      mockApi(),
+export default defineConfig({
+  plugins: [
+    fis3(),
+    markdown(),
+    mockApi(),
+    transformMobileHtml(),
 
-      react({
-        babel: {
-          parserOpts: {
-            plugins: ['decorators-legacy', 'classProperties']
-          }
+    react({
+      babel: {
+        parserOpts: {
+          plugins: ['decorators-legacy', 'classProperties']
         }
-      }),
-      svgr({
-        exportAsDefault: true,
-        svgrOptions: {
-          svgProps: {
-            className: 'icon'
-          },
-          prettier: false,
-          dimensions: false
-        }
-      }),
-      monacoEditorPlugin({})
-    ],
-    optimizeDeps: {
-      include: ['amis-formula/lib/doc'],
-      esbuildOptions: {
-        target: 'esnext'
       }
-    },
-    server: {
-      port: 8888,
-      host: true
-    },
-    resolve: {
-      alias: [
-        {
-          find: 'amis-formula/lib',
-          replacement: path.resolve(__dirname, './packages/amis-formula/src')
+    }),
+    svgr({
+      exportAsDefault: true,
+      svgrOptions: {
+        svgProps: {
+          className: 'icon'
         },
-        {
-          find: 'amis-formula',
-          replacement: path.resolve(__dirname, './packages/amis-formula/src')
-        },
-        {
-          find: 'amis-ui/lib',
-          replacement: path.resolve(__dirname, './packages/amis-ui/src')
-        },
-        {
-          find: 'amis-ui',
-          replacement: path.resolve(__dirname, './packages/amis-ui/src')
-        },
-        {
-          find: 'amis-core',
-          replacement: path.resolve(__dirname, './packages/amis-core/src')
-        },
-        {
-          find: 'amis',
-          replacement: path.resolve(__dirname, './packages/amis/src')
-        }
-      ]
+        prettier: false,
+        dimensions: false
+      }
+    }),
+    monacoEditorPlugin({})
+  ],
+  optimizeDeps: {
+    include: ['amis-formula/lib/doc'],
+    exclude: ['amis-core', 'amis-formula', 'amis', 'amis-ui'],
+    esbuildOptions: {
+      target: 'esnext'
     }
-  };
+  },
+  server: {
+    host: '0.0.0.0',
+    port: 8888
+  },
+  resolve: {
+    alias: [
+      {
+        find: 'moment/locale',
+        replacement: 'moment/dist/locale'
+      },
+      {
+        find: 'amis-formula/lib',
+        replacement: path.resolve(__dirname, './packages/amis-formula/src')
+      },
+      {
+        find: 'amis-formula',
+        replacement: path.resolve(__dirname, './packages/amis-formula/src')
+      },
+      {
+        find: 'amis-ui/lib',
+        replacement: path.resolve(__dirname, './packages/amis-ui/src')
+      },
+      {
+        find: 'amis-ui',
+        replacement: path.resolve(__dirname, './packages/amis-ui/src')
+      },
+      {
+        find: 'amis-core',
+        replacement: path.resolve(__dirname, './packages/amis-core/src')
+      },
+      {
+        find: 'amis/lib',
+        replacement: path.resolve(__dirname, './packages/amis/src')
+      },
+      {
+        find: 'amis',
+        replacement: path.resolve(__dirname, './packages/amis/src')
+      },
+      {
+        find: 'amis-editor',
+        replacement: path.resolve(__dirname, './packages/amis-editor/src')
+      },
+      {
+        find: 'amis-editor-core',
+        replacement: path.resolve(__dirname, './packages/amis-editor-core/src')
+      },
+      {
+        find: 'ooxml-viewer',
+        replacement: path.resolve(__dirname, './packages/ooxml-viewer/src')
+      }
+    ]
+  }
 });
-console.log(
-  '🚀 ~ file: vite.config.ts:79 ~ viteConfig ~ viteConfig',
-  viteConfig
-);
-export default viteConfig;

@@ -599,23 +599,34 @@ selectMode 为`tree`时
               children: [
                 {
                   "label": "Folder A",
+                  "type": "tree",
+                  "name": "Folder_A",
+                  "type": "number",
                   "value": 1,
                   "children": [
                     {
                       "label": "file A",
-                      "value": 2
+                      "value": 2,
+                      "name": "file_A",
+                      "type": "number",
                     },
                     {
                       "label": "Folder B",
                       "value": 3,
+                      "name": "Folder_B",
+                      "type": "number",
                       "children": [
                         {
                           "label": "file b1",
-                          "value": 3.1
+                          "value": 3.1,
+                          "name": "file_b1",
+                          "type": "number"
                         },
                         {
                           "label": "file b2",
-                          "value": 3.2
+                          "value": 3.2,
+                          "name": "file_b2",
+                          "type": "number"
                         }
                       ]
                     }
@@ -825,6 +836,11 @@ selectMode 为`tree`时
           "builderMode": "simple",
           "name": "conditions",
           "description": "适合让用户自己拼查询条件，然后后端根据数据生成 query where",
+          "pickerIcon": {
+            "type": "icon",
+            "icon": "edit",
+            "className": "w-4 h-4"
+          },
           "fields": [
             {
               "label": "文本",

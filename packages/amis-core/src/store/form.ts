@@ -89,6 +89,28 @@ export const FormStore = ServiceStore.named('FormStore')
         return formItems;
       },
 
+      /** 获取InputGroup的子元素 */
+      get inputGroupItems() {
+        const formItems: Record<string, IFormItemStore[]> = {};
+        const children = self.children.concat();
+
+        while (children.length) {
+          const current = children.shift();
+
+          if (current.inputGroupControl && current.inputGroupControl?.name) {
+            const controlName = current.inputGroupControl?.name as string;
+
+            if (formItems.hasOwnProperty(controlName)) {
+              formItems[controlName].push(current);
+            } else {
+              formItems[controlName] = [current];
+            }
+          }
+        }
+
+        return formItems;
+      },
+
       get errors() {
         let errors: {
           [propName: string]: Array<string>;
@@ -165,7 +187,13 @@ export const FormStore = ServiceStore.named('FormStore')
       self.updateData(values, tag, replace);
 
       // 如果数据域中有数据变化，就都reset一下，去掉之前残留的验证消息
-      self.items.forEach(item => item.reset());
+      self.items.forEach(item => {
+        const value = item.value;
+        if (typeof value !== 'undefined' && value !== item.tmpValue) {
+          item.changeTmpValue(value);
+        }
+        item.reset();
+      });
 
       // 同步 options
       syncOptions();
@@ -184,7 +212,7 @@ export const FormStore = ServiceStore.named('FormStore')
       const data = cloneObject(self.data);
 
       if (value !== origin) {
-        if (prev.__prev) {
+        if (prev.hasOwnProperty('__prev')) {
           // 基于之前的 __prev 改
           const prevData = cloneObject(prev.__prev);
           setVariable(prevData, name, origin);
@@ -233,7 +261,7 @@ export const FormStore = ServiceStore.named('FormStore')
       const prev = self.data;
       const data = cloneObject(self.data);
 
-      if (prev.__prev) {
+      if (prev.hasOwnProperty('__prev')) {
         // 基于之前的 __prev 改
         const prevData = cloneObject(prev.__prev);
         setVariable(prevData, name, getVariable(prev, name));
@@ -581,14 +609,18 @@ export const FormStore = ServiceStore.named('FormStore')
           item.resetValidationStatus();
         }
 
-        // 验证过，或者是 unique 的表单项，或者强制验证，或者有远端校验api
+        /**
+         * 1. 验证过，或者是 unique 的表单项，或者强制验证，或者有远端校验api
+         * 2. 如果Schema的默认值为表达式，则需要基于联动计算结果重新校验
+         */
         if (
           !item.validated ||
           item.rules.equals ||
           item.rules.equalsField ||
           item.unique ||
           forceValidate ||
-          !!item.validateApi
+          !!item.validateApi ||
+          item.isValueSchemaExp
         ) {
           yield item.validate(self.data);
         }

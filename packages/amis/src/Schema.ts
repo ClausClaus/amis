@@ -127,11 +127,12 @@ import {
   SchemaClassName,
   SchemaExpression
 } from 'amis-core';
-import type {FormSchemaBase} from 'amis-core/lib/renderers/Form';
+import type {FormSchemaBase} from 'amis-core';
 import {MultilineTextSchema} from './renderers/MultilineText';
 import {DateRangeSchema} from './renderers/DateRange';
 import {PasswordSchema} from './renderers/Password';
 import {WordsSchema} from './renderers/Words';
+import {RadioControlSchema} from './renderers/Form/Radio';
 
 // 每加个类型，这补充一下。
 export type SchemaType =
@@ -190,6 +191,7 @@ export type SchemaType =
   | 'mapping'
   | 'markdown'
   | 'nav'
+  | 'number'
   | 'page'
   | 'pagination'
   | 'pagination-wrapper'
@@ -247,6 +249,7 @@ export type SchemaType =
   | 'input-excel'
   | 'input-formula'
   | 'diff-editor'
+  | 'office-viewer'
 
   // editor 系列
   | 'editor'
@@ -311,6 +314,7 @@ export type SchemaType =
   | 'input-number'
   | 'panel'
   | 'picker'
+  | 'radio'
   | 'radios'
   | 'input-range'
   | 'input-rating'
@@ -459,6 +463,7 @@ export type SchemaObject =
   | NumberControlSchema
   | PickerControlSchema
   | RadiosControlSchema
+  | RadioControlSchema
   | RangeControlSchema
   | RatingControlSchema
   | RichTextControlSchema
@@ -638,7 +643,7 @@ export type SchemaRedirect = string;
  * 2. `<%= data.xxx %>`
  *
  *
- * 更多文档：https://baidu.gitee.io/amis/docs/concepts/template
+ * 更多文档：https://aisuda.bce.baidu.com/amis/zh-CN/docs/concepts/template
  */
 export type SchemaTpl = string;
 
@@ -849,7 +854,7 @@ export interface ToastSchemaBase extends BaseSchema {
 /**
  * Form 表单渲染器。
  *
- * 说明：https://baidu.gitee.io/amis/docs/components/form/index
+ * 说明：https://aisuda.bce.baidu.com/amis/zh-CN/components/form/index
  */
 export interface FormSchema extends FormSchemaBase, BaseSchema {
   /**

@@ -19,14 +19,16 @@ export function autoPreRegisterAmisCustomRenderers() {
   if (window.AmisCustomRenderers) {
     Object.keys(window.AmisCustomRenderers).forEach(rendererType => {
       if (renderersMap[rendererType]) {
-        console.warn(`[amis-core]：预注册渲染器失败，当前已存在重名渲染器（${rendererType}）。`);
+        console.warn(
+          `[amis-core]：预注册渲染器失败，当前已存在重名渲染器（${rendererType}）。`
+        );
       } else {
         const curAmisRenderer = window.AmisCustomRenderers[rendererType];
         if (curAmisRenderer) {
           registerAmisRendererByUsage(rendererType, curAmisRenderer);
         }
       }
-    })
+    });
   }
 }
 
@@ -48,7 +50,9 @@ window.addEventListener(
       const curAmisRenderer = event.data?.amisRenderer;
       const curUsage = curAmisRenderer?.usage || 'renderer';
       if (renderersMap[curAmisRenderer.type]) {
-        console.warn(`[amis-core]：动态注册渲染器失败，当前已存在重名渲染器（${curAmisRenderer.type}）。`);
+        console.warn(
+          `[amis-core]：动态注册渲染器失败，当前已存在重名渲染器（${curAmisRenderer.type}）。`
+        );
       } else {
         console.info(
           '[amis-core]响应动态注册渲染器事件：',
@@ -65,11 +69,11 @@ window.addEventListener(
 function registerAmisRendererByUsage(curUsage: string, curAmisRenderer: any) {
   // 当前支持注册的渲染器类型
   const registerMap: {
-    [props: string]: Function
+    [props: string]: Function;
   } = {
     renderer: Renderer,
     formitem: FormItem,
-    options: OptionsControl,
+    options: OptionsControl
   };
   let curAmisRendererComponent = curAmisRenderer.component;
   if (
@@ -78,7 +82,8 @@ function registerAmisRendererByUsage(curUsage: string, curAmisRenderer: any) {
     window.AmisCustomRenderers[curAmisRenderer.type] &&
     window.AmisCustomRenderers[curAmisRenderer.type].component
   ) {
-    curAmisRendererComponent = window.AmisCustomRenderers[curAmisRenderer.type].component;
+    curAmisRendererComponent =
+      window.AmisCustomRenderers[curAmisRenderer.type].component;
   }
   if (
     curAmisRendererComponent &&
@@ -86,9 +91,10 @@ function registerAmisRendererByUsage(curUsage: string, curAmisRenderer: any) {
     registerMap[curUsage]
   ) {
     registerMap[curUsage as keyof typeof registerMap]({
+      ...(curAmisRenderer.config || {}),
       type: curAmisRenderer.type,
       weight: curAmisRenderer.weight || 0,
-      autoVar: curAmisRenderer.autoVar || false,
+      autoVar: curAmisRenderer.autoVar || false
     })(curAmisRendererComponent);
   }
 }

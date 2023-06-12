@@ -551,7 +551,7 @@ test('Renderer:Page initApi sendOn -> false', async () => {
   expect(fetcher).not.toHaveBeenCalled();
 });
 
-test('Renderer:Page location query', () => {
+test('Renderer:Page location query', async () => {
   const history = createMemoryHistory({
     initialEntries: ['/xxx?a=5']
   });
@@ -584,6 +584,7 @@ test('Renderer:Page location query', () => {
     )
   );
 
+  await wait(300);
   expect(component.toJSON()).toMatchSnapshot();
 });
 
@@ -878,6 +879,7 @@ test('Renderer:Page handleAction actionType=drawer mergeData', async () => {
   expect(container).toMatchSnapshot();
 
   fireEvent.click(getByText(/确认/));
+  await wait(300);
   await waitFor(() => {
     expect(container.querySelector('[role="dialog"]')).not.toBeInTheDocument();
   });
@@ -1001,9 +1003,11 @@ test('Renderer:Page handleAction actionType=ajax & feedback', async () => {
   await waitFor(() => {
     expect(getByText('确认')).toBeInTheDocument();
   });
+  await wait(300);
   expect(container).toMatchSnapshot();
 
   fireEvent.click(getByText(/确认/));
+  await wait(300);
   await waitFor(() => {
     expect(container.querySelector('[role="dialog"]')).not.toBeInTheDocument();
   });
@@ -1218,6 +1222,7 @@ test('Renderer:Page initApi reload by Dialog action', async () => {
   expect(container).toMatchSnapshot();
   fireEvent.click(getByText(/确认/));
 
+  await wait(500);
   await waitFor(() => {
     expect(container.querySelector('[role="dialog"]')).not.toBeInTheDocument();
     expect(getByText('The variable value is 2')).toBeInTheDocument();

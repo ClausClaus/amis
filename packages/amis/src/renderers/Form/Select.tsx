@@ -5,7 +5,8 @@ import {
   OptionsControlProps,
   Option,
   FormOptionsControl,
-  resolveEventData
+  resolveEventData,
+  str2function
 } from 'amis-core';
 import {normalizeOptions} from 'amis-core';
 import find from 'lodash/find';
@@ -21,11 +22,12 @@ import {TransferDropDown} from 'amis-ui';
 
 import type {SchemaClassName} from '../../Schema';
 import type {TooltipObject} from 'amis-ui/lib/components/TooltipWrapper';
+import type {PopOverOverlay} from 'amis-ui/lib/components/PopOverContainer';
 import {supportStatic} from './StaticHoc';
 
 /**
  * Select 下拉选择框。
- * 文档：https://baidu.gitee.io/amis/docs/components/form/select
+ * 文档：https://aisuda.bce.baidu.com/amis/zh-CN/components/form/select
  */
 export interface SelectControlSchema
   extends FormOptionsSchema,
@@ -135,6 +137,25 @@ export interface SelectControlSchema
    * 选项的自定义CSS类名
    */
   optionClassName?: SchemaClassName;
+
+  /**
+   * 下拉框 Popover 设置
+   */
+  overlay?: {
+    /**
+     * 下拉框 Popover 的宽度设置，支持单位 '%'、'px'、'rem'、'em'、'vw', 支持相对写法如 '+20px'
+     */
+    width?: number | string;
+    /**
+     * 下拉框 Popover 的对齐方式
+     */
+    align?: 'left' | 'center' | 'right';
+
+    /**
+     * 检索函数
+     */
+    filterOption?: 'string';
+  };
 }
 
 export interface SelectProps extends OptionsControlProps, SpinnerExtraProps {
@@ -259,18 +280,14 @@ export default class SelectControl extends React.Component<SelectProps, any> {
     // 触发渲染器事件
     const rendererEvent = await dispatchEvent(
       eventName,
-      resolveEventData(
-        this.props,
-        {
-          options,
-          items: options, // 为了保持名字统一
-          value: ['onEdit', 'onDelete'].includes(event)
-            ? eventData
-            : eventData && eventData.value,
-          selectedItems: multiple ? selectedOptions : selectedOptions[0]
-        },
-        'value'
-      )
+      resolveEventData(this.props, {
+        options,
+        items: options, // 为了保持名字统一
+        value: ['onEdit', 'onDelete'].includes(event)
+          ? eventData
+          : eventData && eventData.value,
+        selectedItems: multiple ? selectedOptions : selectedOptions[0]
+      })
     );
     if (rendererEvent?.prevented) {
       return;
@@ -293,16 +310,12 @@ export default class SelectControl extends React.Component<SelectProps, any> {
 
     const rendererEvent = await dispatchEvent(
       'change',
-      resolveEventData(
-        this.props,
-        {
-          value: newValue,
-          options,
-          items: options, // 为了保持名字统一
-          selectedItems: value
-        },
-        'value'
-      )
+      resolveEventData(this.props, {
+        value: newValue,
+        options,
+        items: options, // 为了保持名字统一
+        selectedItems: value
+      })
     );
     if (rendererEvent?.prevented) {
       return;
@@ -370,7 +383,10 @@ export default class SelectControl extends React.Component<SelectProps, any> {
     if (Array.isArray(selectedOptions) && selectedOptions.length) {
       selectedOptions.forEach(option => {
         if (
-          !find(combinedOptions, (item: Option) => item.value == option.value)
+          !find(
+            combinedOptions,
+            (item: Option) => item[valueField] === option[valueField]
+          )
         ) {
           combinedOptions.push({
             ...option,
@@ -449,6 +465,8 @@ export default class SelectControl extends React.Component<SelectProps, any> {
       selectMode,
       env,
       useMobileUI,
+      overlay,
+      filterOption,
       ...rest
     } = this.props;
 
@@ -481,6 +499,11 @@ export default class SelectControl extends React.Component<SelectProps, any> {
             ref={this.inputRef}
             value={selectedOptions}
             options={options}
+            filterOption={
+              typeof filterOption === 'string'
+                ? str2function(filterOption, 'options', 'inputValue', 'option')
+                : filterOption
+            }
             loadOptions={
               isEffectiveApi(autoComplete) ? this.lazyloadRemote : undefined
             }
@@ -496,13 +519,13 @@ export default class SelectControl extends React.Component<SelectProps, any> {
             loading={loading}
             noResultsText={noResultsText}
             renderMenu={menuTpl ? this.renderMenu : undefined}
+            overlay={overlay}
           />
         )}
       </div>
     );
   }
 }
-
 export interface TransferDropDownProps
   extends OptionsControlProps,
     Omit<
@@ -554,7 +577,10 @@ class TransferDropdownRenderer extends BaseTransferRenderer<TransferDropDownProp
       rightMode,
       loadingConfig,
       labelField,
-      showInvalidMatch
+      showInvalidMatch,
+      checkAll,
+      checkAllLabel,
+      overlay
     } = this.props;
 
     // 目前 LeftOptions 没有接口可以动态加载
@@ -607,6 +633,9 @@ class TransferDropdownRenderer extends BaseTransferRenderer<TransferDropDownProp
           virtualListHeight={266}
           labelField={labelField}
           showInvalidMatch={showInvalidMatch}
+          checkAllLabel={checkAllLabel}
+          checkAll={checkAll}
+          overlay={overlay}
         />
 
         <Spinner

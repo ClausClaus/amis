@@ -24,7 +24,9 @@ import {
   TableStore2,
   ITableStore2,
   IRow2,
-  ClassNamesFn
+  ClassNamesFn,
+  isArrayChildrenModified,
+  filterTarget
 } from 'amis-core';
 import {Icon, Table, Spinner, BadgeObject, SpinnerExtraProps} from 'amis-ui';
 import type {
@@ -48,7 +50,7 @@ import {Action} from '../../types';
 
 /**
  * Table 表格2渲染器。
- * 文档：https://baidu.gitee.io/amis/docs/components/table2
+ * 文档：https://aisuda.bce.baidu.com/amis/zh-CN/components/table2
  */
 
 export interface CellSpan {
@@ -293,7 +295,7 @@ export interface TableSchema2 extends BaseSchema {
   popOverContainer?: any;
 
   /**
-   * 嵌套展开记录的唯一标识
+   * 多选、嵌套展开记录的ID字段名 默认id
    */
   keyField?: string;
 
@@ -338,11 +340,6 @@ export interface TableSchema2 extends BaseSchema {
   quickSaveItemApi?: SchemaApi;
 
   /**
-   * 快速编辑关键字段
-   */
-  primaryField?: string;
-
-  /**
    * 接口报错信息配置
    */
   messages?: SchemaMessage;
@@ -366,15 +363,35 @@ export interface TableSchema2 extends BaseSchema {
    * 翻页是否保存数据
    */
   keepItemSelectionOnPageChange?: boolean;
+
+  /**
+   * 是否可选择 作用同rowSelection 兼容原CRUD属性 默认多选
+   */
+  selectable?: boolean;
+
+  /**
+   * 是否可多选 作用同rowSelection.type 兼容原CRUD属性 不设置认为是多选 仅设置selectable才起作用
+   */
+  multiple?: boolean;
+
+  /**
+   * 设置ID字段名 作用同keyFiled 兼容原CURD属性
+   */
+  primaryField?: string;
 }
 
+// 事件调整 对应CRUD2里的事件配置也需要同步修改
 export type Table2RendererEvent =
-  | 'selected'
+  | 'selectedChange'
   | 'columnSort'
   | 'columnFilter'
   | 'columnSearch'
   | 'columnToggled'
-  | 'dragOver';
+  | 'orderChange'
+  | 'rowClick'
+  | 'rowDbClick'
+  | 'rowMouseEnter'
+  | 'rowMouseLeave';
 
 export type Table2RendererAction =
   | 'selectAll'
@@ -397,7 +414,7 @@ export interface Table2Props extends RendererProps, SpinnerExtraProps {
   onPristineChange?: Function;
   onAction?: Function;
   onSort?: Function;
-  onFilter?: Function;
+  onSearch?: Function;
   onRow?: OnRowProps;
   placeholder?: string | SchemaObject;
   itemActions?: Array<ActionObject>;
@@ -414,6 +431,10 @@ export default class Table2 extends React.Component<Table2Props, object> {
   renderedToolbars: Array<string> = [];
   tableRef?: any;
 
+  static defaultProps: Partial<Table2Props> = {
+    keyField: 'id'
+  };
+
   constructor(props: Table2Props, context: IScopedContext) {
     super(props);
 
@@ -424,15 +445,15 @@ export default class Table2 extends React.Component<Table2Props, object> {
       store,
       columnsTogglable,
       columns,
-      keepItemSelectionOnPageChange,
-      maxKeepItemSelectionLength
+      rowSelection,
+      keyField,
+      primaryField
     } = props;
 
     store.update({
       columnsTogglable,
       columns,
-      keepItemSelectionOnPageChange,
-      maxKeepItemSelectionLength
+      rowSelectionKeyField: rowSelection?.keyField || primaryField || keyField
     });
     Table2.syncRows(store, props, undefined) && this.syncSelected();
   }
@@ -490,29 +511,36 @@ export default class Table2 extends React.Component<Table2Props, object> {
       );
 
     let selectedRowKeys: Array<string | number> = [];
+    const keyField = store.keyField;
     // selectedRowKeysExpr比selectedRowKeys优先级高
-    if (props.rowSelection && props.rowSelection.selectedRowKeysExpr) {
-      rows.forEach((row: any, index: number) => {
-        const flag = evalExpression(
-          props.rowSelection?.selectedRowKeysExpr || '',
-          {
-            record: row,
-            rowIndex: index
+    if (typeof props.selected !== 'undefined') {
+      selectedRowKeys = props.selected.map((item: any) => item[keyField]) || [];
+    } else {
+      if (props.rowSelection && props.rowSelection.selectedRowKeysExpr) {
+        rows.forEach((row: any, index: number) => {
+          const flag = evalExpression(
+            props.rowSelection?.selectedRowKeysExpr || '',
+            {
+              record: row,
+              rowIndex: index
+            }
+          );
+          if (flag) {
+            selectedRowKeys.push(row[keyField]);
           }
-        );
-        if (flag) {
-          selectedRowKeys.push(row[props?.rowSelection?.keyField || 'key']);
-        }
-      });
-    } else if (props.rowSelection && props.rowSelection.selectedRowKeys) {
-      selectedRowKeys = [...props.rowSelection.selectedRowKeys];
+        });
+      } else if (props.rowSelection && props.rowSelection.selectedRowKeys) {
+        selectedRowKeys = [...props.rowSelection.selectedRowKeys];
+      }
     }
 
     if (updateRows && selectedRowKeys.length > 0) {
-      store.updateSelected(selectedRowKeys, props.rowSelection?.keyField);
+      store.updateSelected(selectedRowKeys);
     }
 
     let expandedRowKeys: Array<string | number> = [];
+    const expandableKeyField =
+      props.expandable?.keyField || props.primaryField || props.keyField;
     if (props.expandable && props.expandable.expandedRowKeysExpr) {
       rows.forEach((row: any, index: number) => {
         const flag = evalExpression(
@@ -523,7 +551,7 @@ export default class Table2 extends React.Component<Table2Props, object> {
           }
         );
         if (flag) {
-          expandedRowKeys.push(row[props?.expandable?.keyField || 'key']);
+          expandedRowKeys.push(row[expandableKeyField]);
         }
       });
     } else if (props.expandable && props.expandable.expandedRowKeys) {
@@ -531,7 +559,7 @@ export default class Table2 extends React.Component<Table2Props, object> {
     }
 
     if (updateRows && expandedRowKeys.length > 0) {
-      store.updateExpanded(expandedRowKeys, props.expandable?.keyField);
+      store.updateExpanded(expandedRowKeys, expandableKeyField);
     }
 
     return updateRows;
@@ -555,11 +583,42 @@ export default class Table2 extends React.Component<Table2Props, object> {
           (typeof props.source === 'string' && isPureVariable(props.source))))
     ) {
       Table2.syncRows(store, props, prevProps) && this.syncSelected();
+    } else if (isArrayChildrenModified(prevProps.selected!, props.selected!)) {
+      const keyField = store.keyField;
+      const prevSelectedRows = store.selectedRows
+        .map((item: any) => item[keyField])
+        .join(',');
+      store.updateSelected(
+        props.selected.map((item: any) => item[keyField]) || []
+      );
+      const selectedRows = store.selectedRows
+        .map((item: any) => item[keyField])
+        .join(',');
+      prevSelectedRows !== selectedRows && this.syncSelected();
     }
 
     if (!isEqual(prevProps.columns, props.columns)) {
       store.update({
         columns: props.columns
+      });
+    }
+
+    if (
+      !isEqual(
+        prevProps?.rowSelection?.keyField,
+        props.rowSelection?.keyField
+      ) ||
+      !isEqual(prevProps.keyField, props.keyField)
+    ) {
+      store.update({
+        rowSelectionKeyField:
+          props.rowSelection?.keyField || props.primaryField || props.keyField
+      });
+    }
+
+    if (prevProps.columnsTogglable !== props.columnsTogglable) {
+      store.update({
+        columnsTogglable: props.columnsTogglable
       });
     }
   }
@@ -580,12 +639,14 @@ export default class Table2 extends React.Component<Table2Props, object> {
       // 否则加上padding 就超出单元格的区域了
       // children属性在schema里是一个关键字 在渲染器schema中 自定义的children没有用 去掉
 
-      // title 需要去掉，否则部分组件会将其渲染出来
+      // title 不应该传递到 cell-field 的 column 中，否则部分组件会将其渲染出来
+      // 但是 cell-field 需要这个字段，展示列的名称
       const {width, children, title, ...rest} = schema;
       return render(
         'cell-field',
         {
           ...rest,
+          title,
           type: 'cell-field',
           column: rest,
           data: props.data,
@@ -874,6 +935,7 @@ export default class Table2 extends React.Component<Table2Props, object> {
       quickSaveApi,
       quickSaveItemApi,
       primaryField,
+      keyField,
       env,
       messages,
       reload
@@ -884,7 +946,7 @@ export default class Table2 extends React.Component<Table2Props, object> {
         env && env.alert('Table2 quickSaveApi is required');
         return;
       }
-
+      const key = primaryField || keyField;
       const data: any = createObject(store.data, {
         rows,
         rowsDiff: diff,
@@ -892,10 +954,8 @@ export default class Table2 extends React.Component<Table2Props, object> {
         rowsOrigin
       });
 
-      if (rows.length && rows[0].hasOwnProperty(primaryField || 'id')) {
-        data.ids = rows
-          .map(item => (item as any)[primaryField || 'id'])
-          .join(',');
+      if (rows.length && rows[0].hasOwnProperty(key)) {
+        data.ids = rows.map(item => (item as any)[key]).join(',');
       }
 
       if (unModifiedItems) {
@@ -908,7 +968,7 @@ export default class Table2 extends React.Component<Table2Props, object> {
           errorMessage: messages && messages.saveSuccess
         })
         .then(() => {
-          reload && this.reloadTarget(reload, data);
+          reload && this.reloadTarget(filterTarget(reload, data), data);
         })
         .catch(() => {});
     } else {
@@ -927,7 +987,7 @@ export default class Table2 extends React.Component<Table2Props, object> {
       store
         .saveRemote(quickSaveItemApi, sendData)
         .then(() => {
-          reload && this.reloadTarget(reload, data);
+          reload && this.reloadTarget(filterTarget(reload, data), data);
         })
         .catch(() => {
           options?.resetOnFailed && this.reset();
@@ -950,7 +1010,7 @@ export default class Table2 extends React.Component<Table2Props, object> {
       return;
     }
 
-    const {onSave, onPristineChange, primaryField, quickSaveItemApi} =
+    const {onSave, onPristineChange, primaryField, keyField, quickSaveItemApi} =
       this.props;
 
     item.change(values, savePristine);
@@ -980,7 +1040,7 @@ export default class Table2 extends React.Component<Table2Props, object> {
     onSave
       ? onSave(
           item.data,
-          difference(item.data, item.pristine, ['id', primaryField!]),
+          difference(item.data, item.pristine, [keyField, primaryField!]),
           item.path,
           undefined,
           item.pristine,
@@ -988,7 +1048,7 @@ export default class Table2 extends React.Component<Table2Props, object> {
         )
       : this.handleSave(
           quickSaveItemApi ? item.data : [item.data],
-          difference(item.data, item.pristine, ['id', primaryField!]),
+          difference(item.data, item.pristine, [keyField, primaryField!]),
           [item.path],
           undefined,
           item.pristine,
@@ -1011,20 +1071,16 @@ export default class Table2 extends React.Component<Table2Props, object> {
       store,
       classnames: cx,
       data,
-      columnsTogglable,
-      $path
+      columnsTogglable
     } = this.props;
-
-    // 如果table是在crud里面，自定义显示列配置在grid里，这里就不需要渲染了
-    const isInCrud = /(?:\/|^)crud2\//.test($path as string);
-
     actions = Array.isArray(actions) ? actions.concat() : [];
     const config = isObject(columnsTogglable) ? columnsTogglable : {};
 
     // 现在默认从crud里传进来的columnsTogglable是boolean类型
     // table单独配置的是SchemaNode类型
+    // 如果是在crud里 配置了columnsTogglable相关配置 那么还是在这里渲染
+    // 用户也可以在crud2的grid里配置 那么crud2里就不要再写了 否则就重复了
     if (
-      !isInCrud &&
       store.toggable &&
       region === 'header' &&
       !~this.renderedToolbars.indexOf('columns-toggler')
@@ -1076,8 +1132,7 @@ export default class Table2 extends React.Component<Table2Props, object> {
     selectedRowKeys: Array<string | number>,
     unSelectedRows: Array<string | number>
   ) {
-    const {dispatchEvent, data, rowSelection, onSelect, store, keyField} =
-      this.props;
+    const {dispatchEvent, data, store} = this.props;
 
     const rendererEvent = await dispatchEvent(
       'selectedChange',
@@ -1091,8 +1146,8 @@ export default class Table2 extends React.Component<Table2Props, object> {
       return rendererEvent?.prevented;
     }
 
-    store.updateSelected(selectedRowKeys, rowSelection?.keyField || keyField);
-    onSelect && onSelect(selectedRows, unSelectedRows);
+    store.updateSelected(selectedRowKeys);
+    this.syncSelected();
   }
 
   @autobind
@@ -1115,7 +1170,7 @@ export default class Table2 extends React.Component<Table2Props, object> {
 
   @autobind
   async handleFilter(payload: {filterName: string; filterValue: string}) {
-    const {dispatchEvent, data, onFilter} = this.props;
+    const {dispatchEvent, data, onSearch} = this.props;
     const rendererEvent = await dispatchEvent(
       'columnFilter',
       createObject(data, payload)
@@ -1125,7 +1180,7 @@ export default class Table2 extends React.Component<Table2Props, object> {
       return rendererEvent?.prevented;
     }
 
-    onFilter && onFilter(payload);
+    onSearch && onSearch(payload);
   }
 
   @autobind
@@ -1138,15 +1193,59 @@ export default class Table2 extends React.Component<Table2Props, object> {
 
     const rendererEvent = await dispatchEvent(
       'rowClick',
-      createObject(data, {rowItem})
+      createObject(data, {item: rowItem, index: rowIndex})
     );
 
     if (rendererEvent?.prevented) {
-      return rendererEvent?.prevented;
+      return;
     }
 
     if (rowItem && onRow) {
       onRow.onRowClick && onRow.onRowClick(event, rowItem, rowIndex);
+    }
+  }
+
+  @autobind
+  async handleRowMouseEnter(
+    event: React.MouseEvent<HTMLTableRowElement>,
+    rowItem: any,
+    rowIndex?: number
+  ) {
+    const {dispatchEvent, data, onRow} = this.props;
+
+    const rendererEvent = await dispatchEvent(
+      'rowMouseEnter',
+      createObject(data, {item: rowItem, index: rowIndex})
+    );
+
+    if (rendererEvent?.prevented) {
+      return;
+    }
+
+    if (rowItem && onRow) {
+      onRow.onRowMouseEnter && onRow.onRowMouseEnter(event, rowItem, rowIndex);
+    }
+  }
+
+  @autobind
+  async handleRowMouseLeave(
+    event: React.MouseEvent<HTMLTableRowElement>,
+    rowItem: any,
+    rowIndex?: number
+  ) {
+    const {dispatchEvent, data, onRow} = this.props;
+
+    const rendererEvent = await dispatchEvent(
+      'rowMouseLeave',
+      createObject(data, {item: rowItem, index: rowIndex})
+    );
+
+    if (rendererEvent?.prevented) {
+      return;
+    }
+
+    if (rowItem && onRow) {
+      onRow.onRowMouseLeave && onRow.onRowMouseLeave(event, rowItem, rowIndex);
     }
   }
 
@@ -1195,18 +1294,18 @@ export default class Table2 extends React.Component<Table2Props, object> {
   }
 
   doAction(action: ActionObject, args: any, throwErrors: boolean): any {
-    const {store, rowSelection, data, keyField: key, expandable} = this.props;
+    const {store, data, keyField: key, expandable, primaryField} = this.props;
 
     const actionType = action?.actionType as string;
-    const keyField = rowSelection?.keyField || key || 'key';
+    const keyField = store.keyField;
     const dataSource = store.getData(data).items || [];
 
     switch (actionType) {
       case 'selectAll':
-        store.updateSelectedAll(keyField);
+        store.updateSelectedAll();
         break;
       case 'clearAll':
-        store.updateSelected([], keyField);
+        store.updateSelected([]);
         break;
       case 'select':
         const selected: Array<any> = [];
@@ -1219,10 +1318,10 @@ export default class Table2 extends React.Component<Table2Props, object> {
             selected.push(item[keyField]);
           }
         });
-        store.updateSelected(selected, keyField);
+        store.updateSelected(selected);
         break;
       case 'expand':
-        const expandableKey = expandable?.keyField || key || 'key';
+        const expandableKey = expandable?.keyField || primaryField || key;
         const expanded: Array<any> = [];
         const collapse: Array<any> = [];
         // value值控制展开1个
@@ -1280,6 +1379,8 @@ export default class Table2 extends React.Component<Table2Props, object> {
       title,
       footer,
       rowSelection,
+      selectable,
+      multiple,
       columns,
       expandable,
       footSummary,
@@ -1290,6 +1391,8 @@ export default class Table2 extends React.Component<Table2Props, object> {
       rowClassNameExpr,
       itemActions,
       keyField,
+      primaryField,
+      maxKeepItemSelectionLength,
       onRow,
       store,
       ...rest
@@ -1329,7 +1432,7 @@ export default class Table2 extends React.Component<Table2Props, object> {
       const {selectedRowKeys, selections, ...rest} = rowSelection;
       rowSelectionConfig = {
         selectedRowKeys: store.currentSelectedRowKeys,
-        maxSelectedLength: store.maxKeepItemSelectionLength,
+        maxSelectedLength: maxKeepItemSelectionLength,
         ...rest
       };
 
@@ -1340,12 +1443,10 @@ export default class Table2 extends React.Component<Table2Props, object> {
             (disableOn
               ? evalExpression(disableOn, {record, rowIndex})
               : false) ||
-            (store.maxKeepItemSelectionLength &&
+            (maxKeepItemSelectionLength &&
               store.currentSelectedRowKeys.length >=
-                store.maxKeepItemSelectionLength &&
-              !store.currentSelectedRowKeys.includes(
-                record[rowSelection.keyField || keyField || 'key']
-              ))
+                maxKeepItemSelectionLength &&
+              !store.currentSelectedRowKeys.includes(record[store.keyField]))
         };
       };
 
@@ -1386,11 +1487,17 @@ export default class Table2 extends React.Component<Table2Props, object> {
                 }
                 return true;
               });
-              store.updateSelected(newSelectedRowKeys, rowSelection.keyField);
+              store.updateSelected(newSelectedRowKeys);
             }
           });
         });
       }
+    } else if (selectable) {
+      rowSelectionConfig = {
+        type: multiple === false ? 'radio' : '', // rowSelection.type不设置 默认为多选
+        selectedRowKeys: store.currentSelectedRowKeys,
+        maxSelectedLength: maxKeepItemSelectionLength
+      };
     }
 
     let rowClassName = undefined;
@@ -1455,9 +1562,12 @@ export default class Table2 extends React.Component<Table2Props, object> {
         onFilter={this.handleFilter}
         onDrag={this.handleOrderChange}
         itemActions={itemActionsConfig}
+        keyField={primaryField || keyField}
         onRow={{
           ...onRow,
-          onRowClick: this.handleRowClick
+          onRowClick: this.handleRowClick,
+          onRowMouseEnter: this.handleRowMouseEnter,
+          onRowMouseLeave: this.handleRowMouseLeave
         }}
       ></Table>
     );

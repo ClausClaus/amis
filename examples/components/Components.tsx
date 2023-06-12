@@ -187,6 +187,7 @@ export const components = [
           import('../../docs/zh-CN/components/nav.md').then(wrapDoc)
         )
       },
+
       {
         label: 'AnchorNav 锚点导航',
         path: '/zh-CN/components/anchor-nav',
@@ -226,6 +227,13 @@ export const components = [
         path: '/zh-CN/components/form/formitem',
         component: React.lazy(() =>
           import('../../docs/zh-CN/components/form/formitem.md').then(wrapDoc)
+        )
+      },
+      {
+        label: 'Control 表单项包裹',
+        path: '/zh-CN/components/form/control',
+        component: React.lazy(() =>
+          import('../../docs/zh-CN/components/form/control.md').then(wrapDoc)
         )
       },
       {
@@ -556,6 +564,15 @@ export const components = [
           ).then(wrapDoc)
         )
       },
+
+      {
+        label: 'Radio 单选框',
+        path: '/zh-CN/components/form/radio',
+        component: React.lazy(() =>
+          import('../../docs/zh-CN/components/form/radio.md').then(wrapDoc)
+        )
+      },
+
       {
         label: 'Radios 单选框',
         path: '/zh-CN/components/form/radios',
@@ -950,10 +967,24 @@ export const components = [
         )
       },
       {
+        label: 'Number 展示',
+        path: '/zh-CN/components/number',
+        component: React.lazy(() =>
+          import('../../docs/zh-CN/components/number.md').then(wrapDoc)
+        )
+      },
+      {
         label: 'Markdown 渲染',
         path: '/zh-CN/components/markdown',
         component: React.lazy(() =>
           import('../../docs/zh-CN/components/markdown.md').then(wrapDoc)
+        )
+      },
+      {
+        label: 'OfficeViewer 文档渲染',
+        path: '/zh-CN/components/office-viewer',
+        component: React.lazy(() =>
+          import('../../docs/zh-CN/components/office-viewer.md').then(wrapDoc)
         )
       },
       {

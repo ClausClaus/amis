@@ -1,5 +1,6 @@
 import {PlainObject} from '../types';
 import {uuid} from './helper';
+import cloneDeep from 'lodash/cloneDeep';
 
 export const valueMap: PlainObject = {
   'marginTop': 'margin-top',
@@ -27,7 +28,14 @@ export const valueMap: PlainObject = {
   'lineHeight': 'line-height'
 };
 
+export const inheritValueMap: PlainObject = {
+  background: 'bg-color',
+  radius: 'border'
+};
+
 interface extra {
+  important?: boolean;
+  inner?: string;
   pre?: string;
   suf?: string;
 }
@@ -55,8 +63,43 @@ export function addStyle(style: string, id: string) {
   varStyleTag.innerHTML += style;
 }
 
+// 继承数据处理
+function handleInheritData(statusMap: any, data: any) {
+  if (!data) {
+    return;
+  }
+  // 检查是否存在inherit
+  ['hover', 'active'].forEach(status => {
+    for (let key in statusMap[status]) {
+      if (typeof statusMap[status][key] === 'object') {
+        for (let style in statusMap[status][key]) {
+          if (statusMap[status][key][style] === 'inherit') {
+            // 值为inherit时设置为default的值或者主题中的default值
+            if (statusMap['default'][key] && statusMap['default'][key][style]) {
+              statusMap[status][key][style] = statusMap.default[key][style];
+            } else {
+              const value = inheritValueMap[key] || key;
+              statusMap[status][key][style] =
+                data['default'].body[value][style];
+            }
+          }
+        }
+      } else {
+        if (statusMap[status][key] === 'inherit') {
+          if (statusMap['default'][key] && statusMap['default'][key]) {
+            statusMap[status][key] = statusMap.default[key];
+          } else {
+            const value = inheritValueMap[key] || key;
+            statusMap[status][key] = data['default'].body[value];
+          }
+        }
+      }
+    }
+  });
+}
+
 export function formatStyle(
-  css: any,
+  themeCss: any,
   classNames: {
     key: string;
     value?: string;
@@ -67,9 +110,10 @@ export function formatStyle(
       disabled?: extra;
     };
   }[],
-  id?: string
+  id?: string,
+  defaultData?: any
 ) {
-  if (!css) {
+  if (!themeCss) {
     return {value: '', origin: []};
   }
   const res = [];
@@ -81,7 +125,7 @@ export function formatStyle(
   };
 
   for (let item of classNames) {
-    const body = css[item.key];
+    const body = themeCss[item.key];
     const list = item.value?.split(' ');
     const classNameList: string[] = [];
 
@@ -97,7 +141,9 @@ export function formatStyle(
             ?.replace('u:', '')
             .replace('-label', '')
             .replace('-description', '')
-            .replace('-addOn', '') || ''
+            .replace('-addOn', '')
+            .replace('-icon', '')
+            .replace('-inner', '') || ''
         )
       ) {
         classNameList.push(n);
@@ -129,6 +175,7 @@ export function formatStyle(
           statusMap.default[key] = body[key];
         }
       }
+      handleInheritData(statusMap, defaultData);
 
       for (let status in statusMap) {
         const weights = weightsList[status];
@@ -165,23 +212,35 @@ export function formatStyle(
             }
           } else {
             const value = style;
-            value && fn(key, value);
+            if (key === 'iconSize') {
+              fn('width', value + (weights?.important ? ' !important' : ''));
+              fn('height', value + (weights?.important ? ' !important' : ''));
+              fn(
+                'font-size',
+                value + (weights?.important ? ' !important' : '')
+              );
+            } else {
+              value &&
+                fn(key, value + (weights?.important ? ' !important' : ''));
+            }
           }
         }
         if (styles.length > 0) {
           const cx = (weights?.pre || '') + className + (weights?.suf || '');
+          const inner = weights?.inner || '';
           res.push({
-            className: cx + status2string[status],
-            content: `.${cx + status2string[status]} {\n  ${styles.join(
+            className: cx + status2string[status] + inner,
+            content: `.${cx + status2string[status]} ${inner}{\n  ${styles.join(
               '\n  '
             )}\n}`
           });
-          if (['hover', 'active', 'disabled'].includes(status)) {
-            res.push({
-              className: cx + '.' + status,
-              content: `.${cx}.${status} {\n  ${styles.join('\n  ')}\n}`
-            });
-          }
+          // TODO:切换状态暂时先不改变组件的样式
+          // if (['hover', 'active', 'disabled'].includes(status)) {
+          //   res.push({
+          //     className: cx + '.' + status,
+          //     content: `.${cx}.${status} {\n  ${styles.join('\n  ')}\n}`
+          //   });
+          // }
         }
       }
     }
@@ -192,23 +251,52 @@ export function formatStyle(
   };
 }
 
+export interface CustomStyleClassName {
+  key: string;
+  value?: string;
+  weights?: {
+    default?: extra;
+    hover?: extra;
+    active?: extra;
+    disabled?: extra;
+  };
+}
+
 export function insertCustomStyle(
-  css: any,
-  classNames: {
-    key: string;
-    value?: string;
-    weights?: {
-      default?: extra;
-      hover?: extra;
-      active?: extra;
-      disabled?: extra;
-    };
-  }[],
-  id?: string
+  themeCss: any,
+  classNames: CustomStyleClassName[],
+  id?: string,
+  defaultData?: any,
+  customStyleClassPrefix?: string
 ) {
-  if (!css) {
+  if (!themeCss) {
     return;
   }
-  const {value} = formatStyle(css, classNames, id);
-  insertStyle(value, id?.replace('u:', '') || uuid());
+
+  let {value} = formatStyle(themeCss, classNames, id, defaultData);
+  if (value) {
+    value = customStyleClassPrefix
+      ? `${customStyleClassPrefix} ${value}`
+      : value;
+    insertStyle(value, id?.replace('u:', '') || uuid());
+  }
+}
+
+/**
+ * 根据路径获取默认值
+ */
+export function getValueByPath(path: string, data: any) {
+  try {
+    if (!path || !data) {
+      return null;
+    }
+    const keys = path.split('.');
+    let value = cloneDeep(data.component);
+    for (let i = 0; i < keys.length; i++) {
+      value = value[keys[i]];
+    }
+    return value;
+  } catch (e) {
+    return null;
+  }
 }

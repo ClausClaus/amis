@@ -3,13 +3,13 @@
  */
 
 import React from 'react';
-import {Renderer, RendererProps} from 'amis-core';
+import {buildStyle, Renderer, RendererProps} from 'amis-core';
 import {Schema} from 'amis-core';
 import {BaseSchema, SchemaCollection, SchemaObject} from '../Schema';
 
 /**
  * Flex 布局
- * 文档：https://baidu.gitee.io/amis/docs/components/flex
+ * 文档：https://aisuda.bce.baidu.com/amis/zh-CN/components/flex
  */
 export interface FlexSchema extends BaseSchema {
   /**
@@ -81,7 +81,7 @@ export default class Flex extends React.Component<FlexProps, object> {
   static defaultProps: Partial<FlexProps> = {
     direction: 'row',
     justify: 'center',
-    alignItems: 'center',
+    alignItems: 'stretch',
     alignContent: 'center'
   };
 
@@ -99,16 +99,17 @@ export default class Flex extends React.Component<FlexProps, object> {
       style,
       className,
       render,
-      disabled
+      disabled,
+      data
     } = this.props;
-
+    const styleVar = buildStyle(style, data);
     const flexStyle = {
       display: 'flex',
       flexDirection: direction,
       justifyContent: justify,
       alignItems,
       alignContent,
-      ...style
+      ...styleVar
     };
 
     return (

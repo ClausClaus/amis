@@ -13,7 +13,7 @@ import {createObject} from 'amis-core';
 
 /**
  * Tasks 渲染器，格式说明
- * 文档：https://baidu.gitee.io/amis/docs/components/tasks
+ * 文档：https://aisuda.bce.baidu.com/amis/zh-CN/components/tasks
  */
 export interface TasksSchema extends BaseSchema, SpinnerExtraProps {
   /** 指定为任务类型 */
@@ -396,7 +396,9 @@ export default class Task extends React.Component<TaskProps, TaskState> {
             ) : (
               items.map((item, key) => (
                 <tr key={key}>
-                  <td>{item.label}</td>
+                  <td>
+                    <span className={cx('word-break')}>{item.label}</span>
+                  </td>
                   <td>
                     {item.status == loadingStatusCode ? (
                       <Spinner

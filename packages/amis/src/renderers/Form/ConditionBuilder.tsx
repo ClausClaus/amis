@@ -24,10 +24,11 @@ import {
 } from 'amis-ui';
 
 import {IconSchema} from '../Icon';
+import {isMobile} from 'amis-core';
 
 /**
  * 条件组合控件
- * 文档：https://baidu.gitee.io/amis/docs/components/form/condition-builder
+ * 文档：https://aisuda.bce.baidu.com/amis/zh-CN/components/form/condition-builder
  */
 export interface ConditionBuilderControlSchema extends FormBaseControlSchema {
   /**
@@ -88,7 +89,7 @@ export default class ConditionBuilderControl extends React.PureComponent<Conditi
   renderEtrValue(schema: Schema, data: any) {
     return this.props.render(
       'inline',
-      Object.assign(schema, {label: false}),
+      Object.assign(schema, {label: false, inputOnly: true}),
       data
     );
   }
@@ -113,7 +114,13 @@ export default class ConditionBuilderControl extends React.PureComponent<Conditi
     }
 
     return (
-      <div className={cx(`ConditionBuilderControl`, className)}>
+      <div
+        className={cx(
+          `ConditionBuilderControl`,
+          {'is-mobile': isMobile()},
+          className
+        )}
+      >
         <ConditionBuilderWithRemoteOptions
           renderEtrValue={this.renderEtrValue}
           pickerIcon={this.renderPickerIcon()}

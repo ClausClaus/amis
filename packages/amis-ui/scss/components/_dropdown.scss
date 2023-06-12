@@ -75,11 +75,6 @@
     color: var(--DropDown-menuItem-color);
     text-decoration: var(--link-decoration);
 
-    &:hover {
-      background: var(--DropDown-menuItem-onHover-bg);
-      color: var(--DropDown-menuItem-onHover-color);
-    }
-
     &.is-active {
       background: var(--DropDown-menuItem-onHover-bg);
       color: var(--DropDown-menuItem-onActive-color);
@@ -128,6 +123,14 @@
     }
   }
 
+  &-menuItem,
+  &-menu:not(.is-mobile) > li {
+    &:hover {
+      background: var(--DropDown-menuItem-onHover-bg);
+      color: var(--DropDown-menuItem-onHover-color);
+    }
+  }
+
   &-menu > li a {
     color: inherit;
     display: block;
@@ -137,6 +140,11 @@
   &-popover {
     border: none;
     box-shadow: none;
+    // 如果是在PopOver position: absolute会使overlayNode没有高度 定位不正确
+    // 改成static z-index不生效 无法点击操作
+    > .#{$ns}DropDown-menu-root {
+      position: relative;
+    }
   }
 
   > .#{$ns}Button {

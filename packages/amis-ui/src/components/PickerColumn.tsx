@@ -28,7 +28,7 @@ export interface PickerColumnItem {
   visibleItemCount?: number;
   itemHeight?: number;
   options?: PickerOption[];
-  optionRender?: (option: string | object | PickerOption) => React.ReactNode;
+  optionRender?: (...params: any) => React.ReactNode;
   onChange?: (
     value?: PickerOption | string,
     index?: number,
@@ -313,13 +313,13 @@ const PickerColumn = forwardRef<{}, PickerColumnProps>((props, ref) => {
 
       const childData = {
         className: 'text-ellipsis',
-        children: text
+        children: text as React.ReactNode
       };
 
       return (
         <li {...data} ref={menuItemRef}>
           {props.optionRender ? (
-            props.optionRender(option)
+            props.optionRender(option, {index, checked: state.index === index})
           ) : (
             <div {...childData} />
           )}

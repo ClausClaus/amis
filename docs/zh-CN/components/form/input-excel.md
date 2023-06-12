@@ -13,6 +13,8 @@ order: 14
 1. 节省后端开发成本，无需再次解析 Excel
 2. 可以前端实时预览效果，比如配合 input-table 组件进行二次修改
 
+> 2.10.0 以上版本支持 xls 文件格式，2.9.0 及以下版本只支持 xlsx
+
 ## 基本使用
 
 默认情况下只解析第一个 sheet 的内容，下面的例子中，选择上传文件后，就能知道最终会解析成什么数据
@@ -65,7 +67,8 @@ order: 14
         {
           "type": "input-excel",
           "name": "excel",
-          "label": "上传 Excel"
+          "label": "上传 Excel",
+          "placeholder": "请拖拽Excel文件到当前区域"
         },
         {
           "type": "input-table",
@@ -241,16 +244,17 @@ order: 14
 
 ## 属性表
 
-| 属性名       | 类型                    | 默认值   | 说明               |
-| ------------ | ----------------------- | -------- | ------------------ |
-| allSheets    | `boolean`               | false    | 是否解析所有 sheet |
-| parseMode    | `'array'` 或 `'object'` | 'object' | 解析模式           |
-| includeEmpty | `boolean`               | true     | 是否包含空值       |
-| plainText    | `boolean`               | true     | 是否解析为纯文本   |
+| 属性名       | 类型                    | 默认值                          | 说明               | 版本    |
+| ------------ | ----------------------- | ------------------------------- | ------------------ | ------- |
+| allSheets    | `boolean`               | false                           | 是否解析所有 sheet |
+| parseMode    | `'array'` 或 `'object'` | 'object'                        | 解析模式           |
+| includeEmpty | `boolean`               | true                            | 是否包含空值       |
+| plainText    | `boolean`               | true                            | 是否解析为纯文本   |
+| placeholder  | `string`                | `"拖拽 Excel 到这，或点击上传"` | 占位文本提示       | `2.8.1` |
 
 ## 事件表
 
-当前组件会对外派发以下事件，可以通过`onEvent`来监听这些事件，并通过`actions`来配置执行的动作，在`actions`中可以通过`${事件参数名}`来获取事件产生的数据（`< 2.3.2 及以下版本 为 ${event.data.[事件参数名]}`），详细请查看[事件动作](../../docs/concepts/event-action)。
+当前组件会对外派发以下事件，可以通过`onEvent`来监听这些事件，并通过`actions`来配置执行的动作，在`actions`中可以通过`${事件参数名}`或`${event.data.[事件参数名]}`来获取事件产生的数据，详细请查看[事件动作](../../docs/concepts/event-action)。
 
 > `[name]`表示当前组件绑定的名称，即`name`属性，如果没有配置`name`属性，则通过`value`取值。
 

@@ -10,7 +10,7 @@ import {BaseSchema, SchemaCollection, SchemaTpl, SchemaObject} from '../Schema';
 
 /**
  * Collapse 折叠渲染器，格式说明。
- * 文档：https://baidu.gitee.io/amis/docs/components/collapse
+ * 文档：https://aisuda.bce.baidu.com/amis/zh-CN/components/collapse
  */
 export interface CollapseSchema extends BaseSchema {
   /**
@@ -92,6 +92,10 @@ export interface CollapseSchema extends BaseSchema {
    * 卡片隐藏就销毁内容。
    */
   unmountOnExit?: boolean;
+  /**
+   * 标题内容分割线
+   */
+  divideLine?: boolean;
 }
 
 export interface CollapseProps
@@ -147,7 +151,9 @@ export default class Collapse extends React.Component<CollapseProps, {}> {
       disabled,
       collapsed,
       propsUpdate,
-      onCollapse
+      onCollapse,
+      useMobileUI,
+      divideLine
     } = this.props;
 
     return (
@@ -194,7 +200,9 @@ export default class Collapse extends React.Component<CollapseProps, {}> {
             ? render('body', body)
             : null
         }
+        useMobileUI={useMobileUI}
         onCollapse={onCollapse}
+        divideLine={divideLine}
       ></BasicCollapse>
     );
   }

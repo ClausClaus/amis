@@ -23,12 +23,14 @@ import {
   resolveEventData
 } from 'amis-core';
 import {Html, Icon} from 'amis-ui';
+import {isMobile} from 'amis-core';
 import {FormOptionsSchema, SchemaTpl} from '../../Schema';
 import intersectionWith from 'lodash/intersectionWith';
+import {PopUp} from 'amis-ui';
 
 /**
  * Picker
- * 文档：https://baidu.gitee.io/amis/docs/components/form/picker
+ * 文档：https://aisuda.bce.baidu.com/amis/zh-CN/components/form/picker
  */
 export interface PickerControlSchema extends FormOptionsSchema {
   type: 'picker';
@@ -60,6 +62,11 @@ export interface PickerControlSchema extends FormOptionsSchema {
   modalMode?: 'dialog' | 'drawer';
 
   /**
+   * 弹窗的标题，默认为情选择
+   */
+  modalTitle?: string;
+
+  /**
    * 内嵌模式，也就是说不弹框了。
    */
   embed?: boolean;
@@ -82,6 +89,7 @@ export default class PickerControl extends React.PureComponent<
   any
 > {
   static propsList: Array<string> = [
+    'modalTitle',
     'modalMode',
     'pickerSchema',
     'labelField',
@@ -159,6 +167,7 @@ export default class PickerControl extends React.PureComponent<
 
     const ctx = createObject(data, {
       value: value,
+      [valueField || 'value']: value,
       op: 'loadOptions'
     });
 
@@ -288,11 +297,7 @@ export default class PickerControl extends React.PureComponent<
     const option = multiple ? items : items[0];
     const rendererEvent = await dispatchEvent(
       'change',
-      resolveEventData(
-        this.props,
-        {value, option, selectedItems: option},
-        'value'
-      )
+      resolveEventData(this.props, {value, option, selectedItems: option})
     );
     if (rendererEvent?.prevented) {
       return;
@@ -391,7 +396,8 @@ export default class PickerControl extends React.PureComponent<
       labelField,
       labelTpl,
       translate: __,
-      disabled
+      disabled,
+      env
     } = this.props;
 
     return (
@@ -422,7 +428,10 @@ export default class PickerControl extends React.PureComponent<
               }}
             >
               {labelTpl ? (
-                <Html html={filter(labelTpl, item)} />
+                <Html
+                  html={filter(labelTpl, item)}
+                  filterHtml={env.filterHtml}
+                />
               ) : (
                 `${
                   getVariable(item, labelField || 'label') ||
@@ -512,11 +521,16 @@ export default class PickerControl extends React.PureComponent<
       embed,
       selectedOptions,
       translate: __,
-      popOverContainer
+      popOverContainer,
+      modalTitle,
+      data,
+      useMobileUI
     } = this.props;
 
+    const mobileUI = useMobileUI && isMobile();
+
     return (
-      <div className={cx(`PickerControl`, className)}>
+      <div className={cx(`PickerControl`, {'is-mobile': mobileUI}, className)}>
         {embed ? (
           <div className={cx('Picker')}>
             {this.renderBody({popOverContainer})}
@@ -547,6 +561,7 @@ export default class PickerControl extends React.PureComponent<
                   onKeyDown={this.handleKeyDown}
                   onFocus={this.handleFocus}
                   onBlur={this.handleBlur}
+                  readOnly={mobileUI}
                 />
               </div>
 
@@ -557,14 +572,21 @@ export default class PickerControl extends React.PureComponent<
               ) : null}
 
               <span onClick={this.open} className={cx('Picker-btn')}>
-                <Icon icon="window-restore" className="icon" />
+                <Icon
+                  icon="window-restore"
+                  className="icon"
+                  iconContent="Picker-icon"
+                />
               </span>
             </div>
 
             {render(
               'modal',
               {
-                title: __('Select.placeholder'),
+                title:
+                  modalTitle && typeof modalTitle === 'string'
+                    ? filter(modalTitle, data)
+                    : __('Select.placeholder'),
                 size: size,
                 type: modalMode,
                 className: modalClassName,

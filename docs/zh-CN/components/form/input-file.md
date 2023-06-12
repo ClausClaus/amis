@@ -340,7 +340,7 @@ order: 21
 
 ## 事件表
 
-当前组件会对外派发以下事件，可以通过`onEvent`来监听这些事件，并通过`actions`来配置执行的动作，在`actions`中可以通过`${事件参数名}`来获取事件产生的数据（`< 2.3.2 及以下版本 为 ${event.data.[事件参数名]}`），详细请查看[事件动作](../../docs/concepts/event-action)。
+当前组件会对外派发以下事件，可以通过`onEvent`来监听这些事件，并通过`actions`来配置执行的动作，在`actions`中可以通过`${事件参数名}`或`${event.data.[事件参数名]}`来获取事件产生的数据，详细请查看[事件动作](../../docs/concepts/event-action)。
 
 > `[name]`表示当前组件绑定的名称，即`name`属性，如果没有配置`name`属性，则通过`file`取值。
 
@@ -348,7 +348,7 @@ order: 21
 | -------- | ------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------- |
 | change   | `[name]: FileValue` \| `Array<FileValue>` 组件的值                                                                                          | 上传文件值变化时触发(上传失败同样会触发) |
 | remove   | `item: FileValue` 被移除的文件<br/>`[name]: FileValue` \| `Array<FileValue>` 组件的值                                                       | 移除文件时触发                           |
-| success  | `item: FileValue` 远程上传请求成功后返回的结果数据<br/>`[name]: FileValue` \| `Array<FileValue>` 组件的值                                   | 上传成功时触发                           |
+| success  | `item: FileValue` 上传的文件<br/>`result: any` 远程上传请求成功后接口返回的结果数据<br/>`[name]: FileValue` \| `Array<FileValue>` 组件的值  | 上传成功时触发                           |
 | fail     | `item: FileValue` 上传的文件 <br /> `error: object` 远程上传请求失败后返回的错误信息<br/>`[name]: FileValue` \| `Array<FileValue>` 组件的值 | 上传文件失败时触发                       |
 
 ### FileValue 属性表

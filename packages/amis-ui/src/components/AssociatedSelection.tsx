@@ -12,7 +12,6 @@ import {themeable} from 'amis-core';
 import {uncontrollable} from 'amis-core';
 import GroupedSelection from './GroupedSelection';
 import TableSelection from './TableSelection';
-import GroupedSelecton from './GroupedSelection';
 import ChainedSelection from './ChainedSelection';
 import {Icon} from './icons';
 import {localeable} from 'amis-core';
@@ -126,7 +125,9 @@ export class AssociatedSelection extends BaseSelection<
       labelField,
       virtualThreshold,
       itemHeight,
-      loadingConfig
+      loadingConfig,
+      checkAll,
+      checkAllLabel
     } = this.props;
 
     const selectdOption = BaseSelection.resolveSelected(
@@ -152,7 +153,7 @@ export class AssociatedSelection extends BaseSelection<
               loadingConfig={loadingConfig}
             />
           ) : (
-            <GroupedSelecton
+            <GroupedSelection
               option2value={this.leftOption2Value}
               options={leftOptions}
               value={this.state.leftValue}
@@ -214,6 +215,8 @@ export class AssociatedSelection extends BaseSelection<
                   virtualThreshold={virtualThreshold}
                   itemHeight={itemHeight}
                   loadingConfig={loadingConfig}
+                  checkAllLabel={checkAllLabel}
+                  checkAll={checkAll}
                 />
               ) : rightMode === 'chained' ? (
                 <ChainedSelection
@@ -228,6 +231,8 @@ export class AssociatedSelection extends BaseSelection<
                   virtualThreshold={virtualThreshold}
                   itemHeight={itemHeight}
                   loadingConfig={loadingConfig}
+                  checkAllLabel={checkAllLabel}
+                  checkAll={checkAll}
                 />
               ) : (
                 <GroupedSelection
@@ -241,6 +246,8 @@ export class AssociatedSelection extends BaseSelection<
                   labelField={labelField}
                   virtualThreshold={virtualThreshold}
                   itemHeight={itemHeight}
+                  checkAllLabel={checkAllLabel}
+                  checkAll={checkAll}
                 />
               )
             ) : (

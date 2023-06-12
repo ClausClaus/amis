@@ -57,6 +57,14 @@ export interface RendererEnv {
   watchRouteChange?: (fn: () => void) => () => void;
   // 用于跟踪用户在界面中的各种操作
   tracker: (eventTrack: EventTrack, props?: PlainObject) => void;
+  /**
+   * 捕获amis执行中的错误信息
+   */
+  errorCatcher?: (error: any, errorInfo: any) => void;
+  /**
+   * 自定义样式前缀
+   */
+  customStyleClassPrefix?: string;
   rendererResolver?: (
     path: string,
     schema: Schema,
@@ -72,7 +80,7 @@ export interface RendererEnv {
     schema: Schema,
     path: string,
     reRender: Function
-  ) => Promise<React.ReactType> | React.ReactType | JSX.Element | void;
+  ) => Promise<React.ElementType> | React.ElementType | JSX.Element | void;
   loadChartExtends?: () => void | Promise<void>;
   useMobileUI?: boolean;
   /**
@@ -153,7 +161,7 @@ export function withRendererEnv<
         const injectedProps: {
           env: RendererEnv;
         } = {
-          env: this.props.env || this.context
+          env: this.props.env! || this.context
         };
 
         if (!injectedProps.env) {

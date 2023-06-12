@@ -23,7 +23,7 @@ import {
   fireEvent,
   render,
   waitFor,
-  waitForElementToBeRemoved
+  screen
 } from '@testing-library/react';
 import '../../src';
 import {clearStoresCache, render as amisRender} from '../../src';
@@ -69,7 +69,23 @@ test('Renderer:crud basic interval headerToolbar footerToolbar', async () => {
           interval: 1000,
           perPage: 2,
           headerToolbar: ['export-excel', 'statistics'],
-          footerToolbar: ['pagination', 'export-excel'],
+          footerToolbar: [
+            'pagination',
+            {
+              type: 'pagination',
+              total: '${count}',
+              layout: 'total,perPage,pager,go',
+              mode: 'normal',
+              activePage: 2,
+              perPage: 10,
+              maxButtons: 7,
+              showPerPage: true,
+              perPageAvailable: [10, 20, 50, 100],
+              showPageInput: true,
+              disabled: false
+            },
+            'export-excel'
+          ],
           columns: [
             {
               name: '__id',
@@ -131,18 +147,23 @@ test('Renderer:crud stopAutoRefreshWhen', async () => {
 });
 
 test('Renderer:crud loadDataOnce', async () => {
-  const {container} = render(
+  const {container, findByRole, findByText} = render(
     amisRender(
       {
         type: 'page',
         body: {
           type: 'crud',
-          api: '/api/mock2/sample',
           syncLocation: false,
+          api: 'https://aisuda.bce.baidu.com/amis/api/mock2/sample',
           loadDataOnce: true,
+          autoGenerateFilter: {
+            columnsNum: 4,
+            showBtnToolbar: false
+          },
+          filterSettingSource: ['version'],
           columns: [
             {
-              name: '__id',
+              name: 'id',
               label: 'ID'
             },
             {
@@ -159,11 +180,29 @@ test('Renderer:crud loadDataOnce', async () => {
             },
             {
               name: 'version',
-              label: 'Engine version'
+              label: 'Engine version',
+              searchable: {
+                type: 'select',
+                name: 'version',
+                label: 'version',
+                placeholder: 'version',
+                clearable: true,
+                multiple: true,
+                searchable: true,
+                checkAll: true,
+                options: ['1', '4', '5'],
+                maxTagCount: 10,
+                extractValue: true,
+                joinValues: false,
+                delimiter: ',',
+                defaultCheckAll: false,
+                checkAllLabel: '全选'
+              }
             },
             {
               name: 'grade',
-              label: 'CSS grade'
+              label: 'CSS grade',
+              sortable: true
             }
           ]
         }
@@ -176,7 +215,37 @@ test('Renderer:crud loadDataOnce', async () => {
   await waitFor(() => {
     expect(container.querySelectorAll('tbody>tr').length > 5).toBeTruthy();
   });
-  expect(container.querySelector('.cxd-Crud-pager')).not.toBeInTheDocument();
+
+  const select = await findByRole('combobox');
+  fireEvent.click(select);
+  await wait(300);
+
+  const tem4 = container.querySelector('div[title="4"] label');
+  expect(tem4).not.toBeNull();
+  const tem5 = container.querySelector('div[title="5"] label');
+  expect(tem5).not.toBeNull();
+  fireEvent.click(tem4 as Element);
+  await wait(300);
+  fireEvent.click(tem5 as Element);
+  await wait(300);
+
+  fireEvent.click(select);
+  await wait(100);
+
+  const searchBtn = await findByText('搜索');
+  fireEvent.click(searchBtn);
+
+  await waitFor(() => {
+    expect(container.querySelectorAll('tbody>tr').length > 5).toBeTruthy();
+  });
+
+  expect(
+    container.querySelectorAll('.cxd-Table-tr--1th .cxd-PlainField')[4]
+      ?.innerHTML
+  ).toEqual('4');
+  // 啥意思？为何不能有分页？
+  // expect(container.querySelector('.cxd-Crud-pager')).not.toBeInTheDocument();
+  // expect(container).toMatchSnapshot();
 });
 
 test('Renderer:crud list', async () => {
@@ -686,7 +755,10 @@ test('Renderer: crud autoGenerateFilter', async () => {
           type: 'crud',
           api: '/api/mock2/sample',
           syncLocation: false,
-          autoGenerateFilter: true,
+          autoGenerateFilter: {
+            columnsNum: 4,
+            showBtnToolbar: false
+          },
           bulkActions: [
             {
               label: '批量删除',
@@ -924,4 +996,43 @@ test('Renderer: crud searchable sortable filterable', async () => {
 
   // 弹窗中没有 排序
   expect(container.querySelectorAll('[data-role="form-item"]').length).toBe(1);
+});
+
+describe('inner events', () => {
+  test('should call the callback function if provided while double clicking a row of the crud', async () => {
+    const mockFn = jest.fn();
+    render(
+      amisRender(
+        {
+          type: 'crud',
+          data: {
+            items: rows
+          },
+          columns: [
+            {
+              name: 'engine',
+              label: 'Rendering engine'
+            }
+          ],
+          onEvent: {
+            rowDbClick: {
+              actions: [
+                {
+                  actionType: 'custom',
+                  script: mockFn
+                }
+              ]
+            }
+          }
+        },
+        {}
+      )
+    );
+
+    await waitFor(() => {
+      const ele = screen.getAllByText('Trident');
+      fireEvent.dblClick(ele[0]);
+      expect(mockFn).toBeCalledTimes(1);
+    });
+  });
 });

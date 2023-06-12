@@ -385,6 +385,7 @@ export function enableDebug() {
 
 interface DebugWrapperProps {
   renderer: any;
+  children?: React.ReactNode;
 }
 
 export class DebugWrapper extends Component<DebugWrapperProps> {
@@ -433,16 +434,17 @@ export function debug(cat: Category, msg: string, ext?: object) {
   if (!isEnabled) {
     return;
   }
+
+  console.groupCollapsed('[amis debug]', msg);
+  console.debug(ext);
+  console.groupEnd();
+
   const log = {
     cat,
     level: 'debug',
     msg: msg,
     ext: JSON.stringify(ext)
   };
-  console.groupCollapsed('amis debug', msg);
-  console.trace(log);
-  console.groupEnd();
-
   store.logs.push(log);
 }
 

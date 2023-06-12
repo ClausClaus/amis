@@ -15,6 +15,7 @@ order: 68
 ```schema: scope="body"
 {
     "type": "tabs",
+    "swipeable": true,
     "tabs": [
         {
             "title": "Tab 1",
@@ -555,31 +556,109 @@ order: 68
 
 ```schema
 {
-    "type": "page",
+  "type": "page",
     "data": {
-        "key": "tab2"
-    },
-    "body": [
+    "key": 2
+  },
+  "body": [
+    {
+      "type": "radios",
+      "name": "key",
+      "mode": "inline",
+      "label": "激活的选项卡",
+      "options": [
         {
-            "type": "tabs",
-            "activeKey": "${key}",
-            "tabs": [
-                {
-                    "title": "Tab 1",
-                    "hash": "tab1",
-                    "tab": "Content 1"
-                },
-
-                {
-                    "title": "Tab 2",
-                    "hash": "tab2",
-                    "tab": "Content 2"
-                }
-            ]
+          "label": "Tab 1",
+          "value": 0
+        },
+        {
+          "label": "Tab 2",
+          "value": 1
+        },
+        {
+          "label": "Tab 3",
+          "value": 2
         }
-    ]
+      ]
+    },
+    {
+      "type": "tabs",
+      "activeKey": "${key|toInt}",
+      "tabs": [
+        {
+          "title": "Tab 1",
+          "tab": "Content 1"
+        },
+        {
+          "title": "Tab 2",
+          "tab": "Content 2"
+        },
+        {
+          "title": "Tab 3",
+          "tab": "Content 3"
+        }
+      ]
+    }
+  ]
 }
 ```
+
+### 初始化设置默认选项卡
+
+> 2.7.1 以上版本
+
+```schema
+{
+  "type": "page",
+  "data": {
+    "defaultKey": 1,
+    "activeKey": 2
+  },
+  "body": [
+    {
+      "type": "radios",
+      "name": "key",
+      "mode": "inline",
+      "label": "激活的选项卡",
+      "options": [
+        {
+          "label": "Tab 1",
+          "value": 0
+        },
+        {
+          "label": "Tab 2",
+          "value": 1
+        },
+        {
+          "label": "Tab 3",
+          "value": 2
+        }
+      ]
+    },
+    {
+      "type": "tabs",
+      "activeKey": "${activeKey|toInt}",
+      "defaultKey": "${defaultKey|toInt}",
+      "tabs": [
+        {
+          "title": "Tab 1",
+          "tab": "Content 1"
+        },
+        {
+          "title": "Tab 2",
+          "tab": "Content 2"
+        },
+        {
+          "title": "Tab 3",
+          "tab": "Content 3"
+        }
+      ]
+    }
+  ]
+}
+```
+
+> 初始化组件时 `defaultKey` 优先级高于 `activeKey`，但 `defaultKey` 仅作用于组件初始化时，不会响应上下文数据变化。
 
 ## 图标
 
@@ -679,6 +758,8 @@ order: 68
 | 属性名                | 类型                              | 默认值                              | 说明                                                                                                       |
 | --------------------- | --------------------------------- | ----------------------------------- | ---------------------------------------------------------------------------------------------------------- |
 | type                  | `string`                          | `"tabs"`                            | 指定为 Tabs 渲染器                                                                                         |
+| defaultKey            | `string` / `number`               |                                     | 组件初始化时激活的选项卡，hash 值或索引值，支持使用表达式 `2.7.1 以上版本`                                 |
+| activeKey             | `string` / `number`               |                                     | 激活的选项卡，hash 值或索引值，支持使用表达式，可响应上下文数据变化                                        |
 | className             | `string`                          |                                     | 外层 Dom 的类名                                                                                            |
 | tabsMode              | `string`                          |                                     | 展示模式，取值可以是 `line`、`card`、`radio`、`vertical`、`chrome`、`simple`、`strong`、`tiled`、`sidebar` |
 | tabsClassName         | `string`                          |                                     | Tabs Dom 的类名                                                                                            |
@@ -709,16 +790,53 @@ order: 68
 | sidePosition          | `left` / `right`                  | `left`                              | `sidebar` 模式下，标签栏位置                                                                               |
 | collapseOnExceed      | `number`                          |                                     | 当 tabs 超出多少个时开始折叠                                                                               |
 | collapseBtnLabel      | `string`                          | `more`                              | 用来设置折叠按钮的文字                                                                                     |
+| swipeable             | `boolean`                         | false                               | 是否开启手势滑动切换（移动端生效）                                                                         |
 
 ## 事件表
 
-当前组件会对外派发以下事件，可以通过`onEvent`来监听这些事件，并通过`actions`来配置执行的动作，在`actions`中可以通过`${事件参数名}`来获取事件产生的数据（`< 2.3.2 及以下版本 为 ${event.data.[事件参数名]}`），详细请查看[事件动作](../../docs/concepts/event-action)。
+当前组件会对外派发以下事件，可以通过`onEvent`来监听这些事件，并通过`actions`来配置执行的动作，在`actions`中可以通过`${事件参数名}`或`${event.data.[事件参数名]}`来获取事件产生的数据，详细请查看[事件动作](../../docs/concepts/event-action)。
 
 > `[name]`表示当前组件绑定的名称，即`name`属性，如果没有配置`name`属性，则通过`value`取值。
 
-| 事件名称 | 事件参数                              | 说明             |
-| -------- | ------------------------------------- | ---------------- |
-| change   | `[name]: number \| string` 选项卡索引 | 切换选项卡时触发 |
+| 事件名称 | 事件参数                             | 说明             |
+| -------- | ------------------------------------ | ---------------- |
+| change   | `value: number \| string` 选项卡索引 | 切换选项卡时触发 |
+
+### change
+
+```schema: scope="body"
+{
+    "type": "tabs",
+    "mode": "line",
+    "tabs": [
+    {
+        "title": "选项卡1",
+        "body": "选项卡内容1"
+    },
+    {
+        "title": "选项卡2",
+        "body": "选项卡内容2"
+    },
+    {
+        "title": "选项卡3",
+        "body": "选项卡内容3"
+    }
+    ],
+    "onEvent": {
+        "change": {
+            "actions": [
+                {
+                    "actionType": "toast",
+                    "args": {
+                    "msgType": "info",
+                    "msg": "切换至选项卡${event.data.value}"
+                    }
+                }
+            ]
+        }
+    }
+}
+```
 
 ## 动作表
 
@@ -727,3 +845,85 @@ order: 68
 | 动作名称        | 动作配置                                 | 说明             |
 | --------------- | ---------------------------------------- | ---------------- |
 | changeActiveKey | `activeKey: number \| string` 选项卡索引 | 激活指定的选项卡 |
+
+### changeActiveKey
+
+可以尝试点击下方按钮，实现选项卡激活。
+
+```schema: scope="body"
+[
+    {
+      "type": "action",
+      "label": "激活选项卡1",
+      "className": "mr-3 mb-3",
+      "onEvent": {
+        "click": {
+          "actions": [
+            {
+              "actionType": "changeActiveKey",
+              "componentId": "tabs-change-receiver",
+              "args": {
+                "activeKey": 1
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "type": "action",
+      "label": "激活选项卡2",
+      "className": "mr-3 mb-3",
+      "onEvent": {
+        "click": {
+          "actions": [
+            {
+              "actionType": "changeActiveKey",
+              "componentId": "tabs-change-receiver",
+              "args": {
+                "activeKey": 2
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "type": "action",
+      "label": "激活选项卡3",
+      "className": "mr-3 mb-3",
+      "onEvent": {
+        "click": {
+          "actions": [
+            {
+              "actionType": "changeActiveKey",
+              "componentId": "tabs-change-receiver",
+              "args": {
+                "activeKey": 3
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "tabs-change-receiver",
+      "type": "tabs",
+      "mode": "line",
+      "tabs": [
+        {
+          "title": "选项卡1",
+          "body": "选项卡内容1"
+        },
+        {
+          "title": "选项卡2",
+          "body": "选项卡内容2"
+        },
+        {
+          "title": "选项卡3",
+          "body": "选项卡内容3"
+        }
+      ]
+    }
+]
+```

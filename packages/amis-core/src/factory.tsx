@@ -24,8 +24,9 @@ import find from 'lodash/find';
 import {LocaleProps} from './locale';
 import {HocStoreFactory} from './WithStore';
 import type {RendererEnv} from './env';
-import {OnEventProps} from './utils/renderer-event';
+import {OnEventProps, RendererEvent} from './utils/renderer-event';
 import {Placeholder} from './renderers/Placeholder';
+import {StatusScopedProps} from './StatusScoped';
 
 export interface TestFunc {
   (
@@ -57,7 +58,11 @@ export interface RendererBasicConfig {
   // [propName:string]:any;
 }
 
-export interface RendererProps extends ThemeProps, LocaleProps, OnEventProps {
+export interface RendererProps
+  extends ThemeProps,
+    LocaleProps,
+    OnEventProps,
+    StatusScopedProps {
   render: (
     region: string,
     node: SchemaNode,
@@ -76,6 +81,7 @@ export interface RendererProps extends ThemeProps, LocaleProps, OnEventProps {
   style?: {
     [propName: string]: any;
   };
+  onBroadcast?: (type: string, rawEvent: RendererEvent<any>, ctx: any) => any;
   [propName: string]: any;
 }
 
@@ -194,6 +200,8 @@ export function registerRenderer(config: RendererConfig): RendererConfig {
 
 export function unRegisterRenderer(config: RendererConfig | string) {
   const name = (typeof config === 'string' ? config : config.name)!;
+  const idx = renderers.findIndex(item => item.name === name);
+  ~idx && renderers.splice(idx, 1);
   delete renderersMap[name];
 
   // 清空渲染器定位缓存
@@ -267,13 +275,13 @@ export const defaultOptions: RenderOptions = {
   },
   isCancel() {
     console.error(
-      'Please implement isCancel. see https://baidu.gitee.io/amis/docs/start/getting-started#%E4%BD%BF%E7%94%A8%E6%8C%87%E5%8D%97'
+      'Please implement isCancel. see https://aisuda.bce.baidu.com/amis/zh-CN/start/getting-started#%E4%BD%BF%E7%94%A8%E6%8C%87%E5%8D%97'
     );
     return false;
   },
   updateLocation() {
     console.error(
-      'Please implement updateLocation. see https://baidu.gitee.io/amis/docs/start/getting-started#%E4%BD%BF%E7%94%A8%E6%8C%87%E5%8D%97'
+      'Please implement updateLocation. see https://aisuda.bce.baidu.com/amis/zh-CN/start/getting-started#%E4%BD%BF%E7%94%A8%E6%8C%87%E5%8D%97'
     );
   },
 

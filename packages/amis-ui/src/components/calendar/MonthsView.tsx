@@ -42,7 +42,12 @@ export interface CustomMonthsViewProps extends LocaleProps {
   setDate?: (date: string) => void;
   updateSelectedMonth?: () => void;
   updateSelectedDate: (event: React.MouseEvent<any>, close?: boolean) => void;
-  renderMonth?: (props: any, month: number, year: number, date: any) => void;
+  renderMonth?: (
+    props: any,
+    month: number,
+    year: number,
+    date: any
+  ) => React.ReactNode;
   onConfirm?: (value: number[], types?: string[]) => void;
   getColumns: (types: DateType[], dateBoundary: void) => any;
   isValidDate?(value: any): boolean;
@@ -78,7 +83,7 @@ export class CustomMonthsView extends React.Component<CustomMonthsViewProps> {
       year = this.props.viewDate.year(),
       rows = [],
       i = 0,
-      months = [],
+      months: Array<React.ReactNode> = [],
       renderer = this.props.renderMonth || this.renderMonth,
       isValid = this.props.isValidDate || this.alwaysValidDate,
       classes,
@@ -116,7 +121,8 @@ export class CustomMonthsView extends React.Component<CustomMonthsViewProps> {
       props = {
         'key': i,
         'data-value': i,
-        'className': classes
+        'className': classes,
+        'viewDate': this.props.viewDate
       };
 
       if (!isDisabled)
@@ -148,16 +154,16 @@ export class CustomMonthsView extends React.Component<CustomMonthsViewProps> {
     year: number,
     date: moment.Moment
   ) => {
-    var localMoment = this.props.viewDate;
-    var monthStr = localMoment
-      .localeData()
-      .monthsShort(localMoment.month(month));
-    var strLength = 3;
+    const {translate: __} = this.props;
+    const {viewDate: localMoment, ...rest} = props;
+    const monthStr = localMoment.month(month).format(__('MMM'));
+    const strLength = 3;
     // Because some months are up to 5 characters long, we want to
     // use a fixed string length for consistency
-    var monthStrFixedLength = monthStr.substring(0, strLength);
+    const monthStrFixedLength = monthStr.substring(0, strLength);
+
     return (
-      <td {...props}>
+      <td {...rest}>
         <span>{monthStrFixedLength}</span>
       </td>
     );

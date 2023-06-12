@@ -5,7 +5,8 @@ import {
   filter,
   IconCheckedSchema,
   autobind,
-  createObject
+  createObject,
+  CustomStyle
 } from 'amis-core';
 import {BaseSchema, SchemaTpl} from '../Schema';
 import {BadgeObject, withBadge} from 'amis-ui';
@@ -14,7 +15,7 @@ import {isObject} from 'lodash';
 
 /**
  * Icon 图表渲染器
- * 文档：https://baidu.gitee.io/amis/docs/components/icon
+ * 文档：https://aisuda.bce.baidu.com/amis/zh-CN/components/icon
  */
 export interface IconSchema extends BaseSchema {
   type: 'icon';
@@ -45,41 +46,34 @@ export class Icon extends React.Component<IconProps, object> {
   @autobind
   handleClick(e: React.MouseEvent<any>) {
     const {dispatchEvent, data} = this.props;
-    dispatchEvent(
-      'click',
-      createObject(data, {
-        nativeEvent: e
-      })
-    );
+    dispatchEvent(e, data);
   }
 
   @autobind
   handleMouseEnter(e: React.MouseEvent<any>) {
     const {dispatchEvent, data} = this.props;
-    dispatchEvent(
-      e,
-      createObject(data, {
-        nativeEvent: e
-      })
-    );
+    dispatchEvent(e, data);
   }
 
   @autobind
   handleMouseLeave(e: React.MouseEvent<any>) {
     const {dispatchEvent, data} = this.props;
-    dispatchEvent(
-      e,
-      createObject(data, {
-        nativeEvent: e
-      })
-    );
+    dispatchEvent(e, data);
   }
 
   render() {
-    const {vendor, classnames: cx, className, style, data} = this.props;
+    const {
+      vendor,
+      classnames: cx,
+      className,
+      style,
+      data,
+      id,
+      themeCss,
+      css,
+      env
+    } = this.props;
     let icon = this.props.icon;
-
-    icon = filter(icon, data);
 
     if (typeof icon !== 'string') {
       if (
@@ -108,6 +102,8 @@ export class Icon extends React.Component<IconProps, object> {
       return;
     }
 
+    icon = filter(icon, data);
+
     let CustomIcon = getIcon(icon);
     if (CustomIcon) {
       return (
@@ -121,7 +117,8 @@ export class Icon extends React.Component<IconProps, object> {
       );
     }
 
-    const isURLIcon = icon?.indexOf('.') !== -1;
+    const isURLIcon =
+      icon?.indexOf('.') !== -1 || icon.startsWith('data:image/');
     let iconPrefix = '';
     if (vendor === 'iconfont') {
       iconPrefix = `iconfont icon-${icon}`;
@@ -132,23 +129,40 @@ export class Icon extends React.Component<IconProps, object> {
       // 如果vendor为空，则不设置前缀,这样可以支持fontawesome v5、fontawesome v6或者其他框架
       iconPrefix = `${icon}`;
     }
-    return isURLIcon ? (
-      <img
-        className={cx('Icon')}
-        src={icon}
-        style={style}
-        onClick={this.handleClick}
-        onMouseEnter={this.handleMouseEnter}
-        onMouseLeave={this.handleMouseLeave}
-      />
-    ) : (
-      <i
-        className={cx(iconPrefix, className)}
-        style={style}
-        onClick={this.handleClick}
-        onMouseEnter={this.handleMouseEnter}
-        onMouseLeave={this.handleMouseLeave}
-      />
+    return (
+      <>
+        {isURLIcon ? (
+          <img
+            className={cx('Icon', className)}
+            src={icon}
+            style={style}
+            onClick={this.handleClick}
+            onMouseEnter={this.handleMouseEnter}
+            onMouseLeave={this.handleMouseLeave}
+          />
+        ) : (
+          <i
+            className={cx(iconPrefix, className)}
+            style={style}
+            onClick={this.handleClick}
+            onMouseEnter={this.handleMouseEnter}
+            onMouseLeave={this.handleMouseLeave}
+          />
+        )}
+        <CustomStyle
+          config={{
+            themeCss: themeCss || css,
+            classNames: [
+              {
+                key: 'className',
+                value: className
+              }
+            ],
+            id
+          }}
+          env={env}
+        />
+      </>
     );
   }
 }

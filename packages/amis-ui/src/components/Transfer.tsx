@@ -9,10 +9,11 @@ import {
   unionWith
 } from 'lodash';
 
-import {ThemeProps, themeable} from 'amis-core';
+import {ThemeProps, themeable, findTree} from 'amis-core';
 import {BaseSelectionProps, BaseSelection, ItemRenderStates} from './Selection';
 import {Options, Option} from './Select';
 import {uncontrollable} from 'amis-core';
+import {isMobile} from 'amis-core';
 import ResultList from './ResultList';
 import TableSelection from './TableSelection';
 import {autobind, flattenTree} from 'amis-core';
@@ -111,9 +112,15 @@ export interface TransferProps
   virtualThreshold?: number; // 数据量多大的时候开启虚拟渲染`
   virtualListHeight?: number; // 虚拟渲染时，列表高度
   showInvalidMatch?: boolean;
+  checkAll?: boolean;
+  checkAllLabel?: string;
+  /** 树形模式下，给 tree 的属性 */
+  onlyChildren?: boolean;
+  useMobileUI?: boolean;
 }
 
 export interface TransferState {
+  tempValue?: Array<Option> | Option;
   inputValue: string;
   searchResult: Options | null;
   isTreeDeferLoad: boolean;
@@ -130,12 +137,16 @@ export class Transfer<
     | 'selectMode'
     | 'statistics'
     | 'virtualThreshold'
+    | 'checkAllLabel'
+    | 'valueField'
   > = {
     multiple: true,
     resultListModeFollowSelect: false,
     selectMode: 'list',
     statistics: true,
-    virtualThreshold: 100
+    virtualThreshold: 100,
+    checkAllLabel: 'Select.checkAll',
+    valueField: 'value'
   };
 
   state: TransferState = {
@@ -157,13 +168,12 @@ export class Transfer<
 
   static getDerivedStateFromProps(props: TransferProps) {
     // 计算是否是懒加载模式
-    let isTreeDeferLoad: boolean = false;
-    props.selectMode === 'tree' &&
-      props.options.forEach(item => {
-        if (item.defer) {
-          isTreeDeferLoad = true;
-        }
-      });
+    const isTreeDeferLoad =
+      props.selectMode === 'tree' &&
+      !!findTree(
+        props.options,
+        (option: Option) => option.deferApi || option.defer
+      );
 
     // 计算结果的selectMode
     let resultSelectMode = 'list';
@@ -225,11 +235,11 @@ export class Transfer<
 
   // 全选，给予动作全选使用
   selectAll() {
-    const {options, option2value, onChange} = this.props;
+    const {options, option2value, onChange, valueField = 'value'} = this.props;
     const availableOptions = flattenTree(options).filter(
       (option, index, list) =>
         !option.disabled &&
-        option.value !== void 0 &&
+        option[valueField] !== void 0 &&
         list.indexOf(option) === index
     );
     let newValue: string | Options = option2value
@@ -302,10 +312,11 @@ export class Transfer<
   );
 
   getFlattenArr(options: Array<Option>) {
+    const {valueField = 'value'} = this.props;
     return flattenTree(options).filter(
       (option, index, list) =>
         !option.disabled &&
-        option.value !== void 0 &&
+        option[valueField] !== void 0 &&
         list.indexOf(option) === index
     );
   }
@@ -313,29 +324,29 @@ export class Transfer<
   // 树搜索处理
   @autobind
   handleSearchTreeChange(values: Array<Option>, searchOptions: Array<Option>) {
-    const {onChange, value} = this.props;
+    const {onChange, value, valueField = 'value'} = this.props;
     const searchAvailableOptions = this.getFlattenArr(searchOptions);
 
     const useArr = intersectionWith(
       searchAvailableOptions,
       values,
-      (a, b) => a.value === b.value
+      (a, b) => a[valueField] === b[valueField]
     );
     const unuseArr = differenceWith(
       searchAvailableOptions,
       values,
-      (a, b) => a.value === b.value
+      (a, b) => a[valueField] === b[valueField]
     );
 
     const newArr: Array<Option> = [];
     Array.isArray(value) &&
       value.forEach((item: Option) => {
-        if (!unuseArr.find(v => v.value === item.value)) {
+        if (!unuseArr.find(v => v[valueField] === item[valueField])) {
           newArr.push(item);
         }
       });
     useArr.forEach(item => {
-      if (!newArr.find(v => v.value === item.value)) {
+      if (!newArr.find(v => v[valueField] === item[valueField])) {
         newArr.push(item);
       }
     });
@@ -358,7 +369,8 @@ export class Transfer<
       options,
       statistics,
       translate: __,
-      searchPlaceholder = __('Transfer.searchKeyword')
+      searchPlaceholder = __('Transfer.searchKeyword'),
+      useMobileUI
     } = props;
 
     if (selectRender) {
@@ -386,6 +398,8 @@ export class Transfer<
       this.availableOptions,
       isEqual
     ).length;
+
+    const mobileUI = useMobileUI && isMobile();
 
     return (
       <>
@@ -429,13 +443,14 @@ export class Transfer<
         </div>
 
         {onSearch ? (
-          <div className={cx('Transfer-search')}>
+          <div className={cx('Transfer-search', {'is-mobile': mobileUI})}>
             <InputBox
               value={this.state.inputValue}
               onChange={this.handleSearch}
               clearable={false}
               onKeyDown={this.handleSearchKeyDown}
               placeholder={searchPlaceholder}
+              useMobileUI
             >
               {this.state.searchResult !== null ? (
                 <a onClick={this.handleSeachCancel}>
@@ -471,9 +486,13 @@ export class Transfer<
       cellRender,
       multiple,
       labelField,
+      valueField = 'value',
       virtualThreshold,
       itemHeight,
-      virtualListHeight
+      virtualListHeight,
+      checkAll,
+      checkAllLabel,
+      onlyChildren
     } = props;
     const {isTreeDeferLoad, searchResult} = this.state;
     const options = searchResult ?? [];
@@ -492,6 +511,7 @@ export class Transfer<
         option2value={option2value}
         cellRender={cellRender}
         itemRender={optionItemRender}
+        valueField={valueField}
         multiple={multiple}
         virtualThreshold={virtualThreshold}
         itemHeight={itemHeight}
@@ -512,11 +532,14 @@ export class Transfer<
         showIcon={false}
         multiple={multiple}
         cascade={true}
-        onlyChildren={!isTreeDeferLoad}
+        onlyChildren={onlyChildren ?? !isTreeDeferLoad}
         itemRender={optionItemRender}
         labelField={labelField}
+        valueField={valueField}
         virtualThreshold={virtualThreshold}
         itemHeight={itemHeight}
+        checkAllLabel={checkAllLabel}
+        checkAll={checkAll}
       />
     ) : mode === 'chained' ? (
       <ChainedSelection
@@ -530,9 +553,12 @@ export class Transfer<
         itemRender={optionItemRender}
         multiple={multiple}
         labelField={labelField}
+        valueField={valueField}
         virtualThreshold={virtualThreshold}
         itemHeight={itemHeight}
         virtualListHeight={virtualListHeight}
+        checkAllLabel={checkAllLabel}
+        checkAll={checkAll}
       />
     ) : (
       <GroupedSelection
@@ -546,9 +572,12 @@ export class Transfer<
         itemRender={optionItemRender}
         multiple={multiple}
         labelField={labelField}
+        valueField={valueField}
         virtualThreshold={virtualThreshold}
         itemHeight={itemHeight}
         virtualListHeight={virtualListHeight}
+        checkAllLabel={checkAllLabel}
+        checkAll={checkAll}
       />
     );
   }
@@ -573,10 +602,14 @@ export class Transfer<
       multiple,
       noResultsText,
       labelField,
+      valueField = 'value',
       virtualThreshold,
       itemHeight,
       virtualListHeight,
-      loadingConfig
+      loadingConfig,
+      checkAll,
+      checkAllLabel,
+      onlyChildren
     } = props;
 
     return selectMode === 'table' ? (
@@ -594,6 +627,8 @@ export class Transfer<
         virtualThreshold={virtualThreshold}
         itemHeight={itemHeight}
         virtualListHeight={virtualListHeight}
+        checkAllLabel={checkAllLabel}
+        checkAll={checkAll}
       />
     ) : selectMode === 'tree' ? (
       <Tree
@@ -603,7 +638,7 @@ export class Transfer<
         options={options}
         value={value}
         onChange={onChange!}
-        onlyChildren={!this.state.isTreeDeferLoad}
+        onlyChildren={onlyChildren ?? !this.state.isTreeDeferLoad}
         itemRender={optionItemRender}
         onDeferLoad={onDeferLoad}
         joinValues={false}
@@ -611,9 +646,12 @@ export class Transfer<
         multiple={multiple}
         cascade={true}
         labelField={labelField}
+        valueField={valueField}
         virtualThreshold={virtualThreshold}
         itemHeight={itemHeight}
         loadingConfig={loadingConfig}
+        checkAllLabel={checkAllLabel}
+        checkAll={checkAll}
       />
     ) : selectMode === 'chained' ? (
       <ChainedSelection
@@ -627,10 +665,13 @@ export class Transfer<
         itemRender={optionItemRender}
         multiple={multiple}
         labelField={labelField}
+        valueField={valueField}
         virtualThreshold={virtualThreshold}
         itemHeight={itemHeight}
         virtualListHeight={virtualListHeight}
         loadingConfig={loadingConfig}
+        checkAllLabel={checkAllLabel}
+        checkAll={checkAll}
       />
     ) : selectMode === 'associated' ? (
       <AssociatedSelection
@@ -649,10 +690,13 @@ export class Transfer<
         itemRender={optionItemRender}
         multiple={multiple}
         labelField={labelField}
+        valueField={valueField}
         virtualThreshold={virtualThreshold}
         itemHeight={itemHeight}
         virtualListHeight={virtualListHeight}
         loadingConfig={loadingConfig}
+        checkAllLabel={checkAllLabel}
+        checkAll={checkAll}
       />
     ) : (
       <GroupedSelection
@@ -666,9 +710,12 @@ export class Transfer<
         itemRender={optionItemRender}
         multiple={multiple}
         labelField={labelField}
+        valueField={valueField}
         virtualThreshold={virtualThreshold}
         itemHeight={itemHeight}
         virtualListHeight={virtualListHeight}
+        checkAllLabel={checkAllLabel}
+        checkAll={checkAll}
       />
     );
   }
@@ -777,8 +824,10 @@ export class Transfer<
       showArrow,
       resultListModeFollowSelect,
       selectMode = 'list',
-      translate: __
-    } = this.props;
+      translate: __,
+      valueField = 'value',
+      useMobileUI
+    } = this.props as any;
     const {searchResult} = this.state;
 
     this.valueArray = BaseSelection.value2array(value, options, option2value);
@@ -786,11 +835,12 @@ export class Transfer<
     this.availableOptions = flattenTree(searchResult ?? options).filter(
       (option, index, list) =>
         !option.disabled &&
-        option.value !== void 0 &&
+        option[valueField] !== void 0 &&
         list.indexOf(option) === index
     );
 
     const tableType = resultListModeFollowSelect && selectMode === 'table';
+    const mobileUI = useMobileUI && isMobile();
 
     return (
       <div
@@ -799,14 +849,14 @@ export class Transfer<
         <div className={cx('Transfer-select')}>
           {this.renderSelect(this.props)}
         </div>
-        <div className={cx('Transfer-mid')}>
+        <div className={cx('Transfer-mid', {'is-mobile': mobileUI})}>
           {showArrow /*todo 需要改成确认模式，即：点了按钮才到右边 */ ? (
             <div className={cx('Transfer-arrow')}>
               <Icon icon="right-arrow" className="icon" />
             </div>
           ) : null}
         </div>
-        <div className={cx('Transfer-result')}>
+        <div className={cx('Transfer-result', {'is-mobile': mobileUI})}>
           <div
             className={cx(
               'Transfer-title',

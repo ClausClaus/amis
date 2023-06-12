@@ -5,7 +5,7 @@
 
 import React from 'react';
 import {ClassNamesFn, themeable} from 'amis-core';
-import {autobind} from 'amis-core';
+import {autobind, isMobile} from 'amis-core';
 
 const preventEvent = (e: any) => e.stopPropagation();
 
@@ -29,6 +29,8 @@ interface CheckboxProps {
   classnames: ClassNamesFn;
   partial?: boolean;
   optionType?: 'default' | 'button';
+  children?: React.ReactNode | Array<React.ReactNode>;
+  useMobileUI?: boolean;
 }
 
 export class Checkbox extends React.Component<CheckboxProps, any> {
@@ -74,12 +76,13 @@ export class Checkbox extends React.Component<CheckboxProps, any> {
       labelClassName,
       optionType
     } = this.props;
-    const _checked = typeof checked !== 'undefined'
-      ? checked
-      : typeof value === 'undefined'
-      ? value
-      : value == trueValue;
-    
+    const _checked =
+      typeof checked !== 'undefined'
+        ? checked
+        : typeof value === 'undefined'
+        ? value
+        : value == trueValue;
+
     return (
       <label
         className={cx(`Checkbox Checkbox--${type}`, className, {
@@ -91,8 +94,10 @@ export class Checkbox extends React.Component<CheckboxProps, any> {
           'Checkbox--button--disabled--unchecked':
             optionType === 'button' && disabled && !_checked,
           'Checkbox--button--disabled--checked':
-            optionType === 'button' && disabled && _checked
+            optionType === 'button' && disabled && _checked,
+          'is-mobile': isMobile()
         })}
+        data-role="checkbox"
       >
         <input
           type={type}

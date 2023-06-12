@@ -1,7 +1,7 @@
 import {observer} from 'mobx-react';
 import React from 'react';
 import type {RootProps} from './Root';
-import {IScopedContext, ScopedContext} from './Scoped';
+import {IScopedContext, ScopedContext, filterTarget} from './Scoped';
 import {IRootStore, RootStore} from './store/root';
 import {ActionObject} from './types';
 import {bulkBindFunctions, guid, isVisible} from './utils/helper';
@@ -14,6 +14,8 @@ import {normalizeApi} from './utils/api';
 
 export interface RootRendererProps extends RootProps {
   location?: any;
+  data?: Record<string, any>;
+  context?: Record<string, any>;
   render: (region: string, schema: any, props: any) => React.ReactNode;
 }
 
@@ -32,6 +34,7 @@ export class RootRenderer extends React.Component<RootRendererProps> {
       parentId: ''
     }) as IRootStore;
 
+    this.store.setContext(props.context);
     this.store.initData(props.data);
     this.store.updateLocation(props.location, this.props.env?.parseLocation);
 
@@ -62,9 +65,14 @@ export class RootRenderer extends React.Component<RootRendererProps> {
     if (props.location !== prevProps.location) {
       this.store.updateLocation(props.location);
     }
+
+    if (props.context !== prevProps.context) {
+      this.store.setContext(props.context);
+    }
   }
 
   componentDidCatch(error: any, errorInfo: any) {
+    this.props.env?.errorCatcher?.(error, errorInfo);
     this.store.setRuntimeError(error, errorInfo);
   }
 
@@ -106,7 +114,7 @@ export class RootRenderer extends React.Component<RootRendererProps> {
       return;
     }
 
-    const scoped = delegate || this.context;
+    const scoped = delegate || (this.context as IScopedContext);
     if (action.actionType === 'reload') {
       action.target && scoped.reload(action.target, ctx);
     } else if (action.target) {
@@ -152,10 +160,10 @@ export class RootRenderer extends React.Component<RootRendererProps> {
       window.open(mailto);
     } else if (action.actionType === 'dialog') {
       store.setCurrentAction(action);
-      store.openDialog(ctx);
+      store.openDialog(ctx, undefined, undefined, delegate);
     } else if (action.actionType === 'drawer') {
       store.setCurrentAction(action);
-      store.openDrawer(ctx);
+      store.openDrawer(ctx, undefined, undefined, delegate);
     } else if (action.actionType === 'toast') {
       action.toast?.items?.forEach((item: any) => {
         env.notify(
@@ -200,8 +208,8 @@ export class RootRenderer extends React.Component<RootRendererProps> {
           redirect && env.jumpTo(redirect, action);
           action.reload &&
             this.reloadTarget(
-              delegate || this.context,
-              action.reload,
+              delegate || (this.context as IScopedContext),
+              filterTarget(action.reload, ctx),
               store.data
             );
         })
@@ -252,7 +260,15 @@ export class RootRenderer extends React.Component<RootRendererProps> {
       return;
     }
 
+    const dialogAction = store.action as ActionObject;
+    const reload = action.reload ?? dialogAction.reload;
+    const scoped = store.getDialogScoped() || (this.context as IScopedContext);
+
     store.closeDialog(true);
+
+    if (reload) {
+      scoped.reload(reload, store.data);
+    }
   }
 
   handleDialogClose(confirmed = false) {
@@ -280,7 +296,18 @@ export class RootRenderer extends React.Component<RootRendererProps> {
       return;
     }
 
+    const drawerAction = store.action as ActionObject;
+    const reload = action.reload ?? drawerAction.reload;
+    const scoped = store.getDrawerScoped() || (this.context as IScopedContext);
+
     store.closeDrawer();
+
+    // 稍等会，等动画结束。
+    setTimeout(() => {
+      if (reload) {
+        scoped.reload(reload, store.data);
+      }
+    }, 300);
   }
 
   handleDrawerClose() {

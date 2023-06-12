@@ -1,12 +1,4 @@
-import {
-  types,
-  getParent,
-  SnapshotIn,
-  flow,
-  getEnv,
-  getRoot,
-  Instance
-} from 'mobx-state-tree';
+import {types, getParent, SnapshotIn, Instance} from 'mobx-state-tree';
 import {iRendererStore} from './iRenderer';
 import isEqual from 'lodash/isEqual';
 import find from 'lodash/find';
@@ -47,9 +39,14 @@ export const Item = types
     },
 
     get locals(): any {
+      const listStore = getParent(self, 2) as IListStore;
       return createObject(
-        extendObject((getParent(self, 2) as IListStore).data, {
-          index: self.index
+        extendObject(listStore.data, {
+          index: self.index,
+
+          // 只有table时，也可以获取选中行
+          selectedItems: listStore.selectedItems.map(item => item.data),
+          unSelectedItems: listStore.unSelectedItems.map(item => item.data)
         }),
         self.data
       );
@@ -63,10 +60,11 @@ export const Item = types
     },
 
     get draggable(): boolean {
-      const table = getParent(self, 2) as IListStore;
-      return table && table.itemDraggableOn
-        ? evalExpression(table.itemDraggableOn, (self as IItem).locals)
-        : true;
+      const list = getParent(self, 2) as IListStore;
+
+      return list && list.itemDraggableOn
+        ? evalExpression(list.itemDraggableOn, (self as IItem).locals)
+        : list.draggable;
     }
   }))
   .actions(self => ({

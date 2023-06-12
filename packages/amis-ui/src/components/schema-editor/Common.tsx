@@ -10,6 +10,18 @@ import PickerContainer from '../PickerContainer';
 import Select from '../Select';
 import Textarea from '../Textarea';
 
+export const schemaEditorItemPlaceholder = {
+  key: 'JSONSchema.key',
+  title: 'JSONSchema.title',
+  description: 'JSONSchema.description',
+  default: 'JSONSchema.default',
+  empty: 'placeholder.empty'
+};
+
+export type SchemaEditorItemPlaceholder = Partial<
+  typeof schemaEditorItemPlaceholder
+>;
+
 export interface SchemaEditorItemCommonProps extends LocaleProps, ThemeProps {
   value?: JSONSchema;
   onChange: (value: JSONSchema) => void;
@@ -39,6 +51,10 @@ export interface SchemaEditorItemCommonProps extends LocaleProps, ThemeProps {
   prefix?: JSX.Element;
   affix?: JSX.Element;
   enableAdvancedSetting?: boolean;
+  /** 各属性输入控件的placeholder */
+  placeholder?: SchemaEditorItemPlaceholder;
+  popOverContainer?: any;
+  useMobileUI?: boolean;
 }
 
 export class SchemaEditorItemCommon<
@@ -83,9 +99,12 @@ export class SchemaEditorItemCommon<
       renderExtraProps,
       renderModalProps,
       enableAdvancedSetting,
+      popOverContainer,
       prefix,
       affix,
-      types
+      types,
+      placeholder,
+      useMobileUI
     } = this.props;
 
     return (
@@ -101,6 +120,7 @@ export class SchemaEditorItemCommon<
             clearable={false}
             disabled={disabled || typeMutable === false}
             simpleValue
+            useMobileUI={useMobileUI}
           />
         ) : null}
 
@@ -118,6 +138,7 @@ export class SchemaEditorItemCommon<
 
         {enableAdvancedSetting ? (
           <PickerContainer
+            useMobileUI={useMobileUI}
             value={value}
             bodyRender={({isOpened, value, onChange, ref}) => {
               return isOpened ? (
@@ -131,7 +152,12 @@ export class SchemaEditorItemCommon<
                         rules={{maxLength: 20}}
                         isRequired
                         render={({field}) => (
-                          <InputBox {...field} disabled={disabled} />
+                          <InputBox
+                            {...field}
+                            disabled={disabled}
+                            placeholder={__(placeholder?.title ?? '')}
+                            useMobileUI={useMobileUI}
+                          />
                         )}
                       />
 
@@ -140,7 +166,12 @@ export class SchemaEditorItemCommon<
                         name="description"
                         control={control}
                         render={({field}) => (
-                          <Textarea {...field} disabled={disabled} />
+                          <Textarea
+                            {...field}
+                            disabled={disabled}
+                            useMobileUI={useMobileUI}
+                            placeholder={__(placeholder?.description ?? '')}
+                          />
                         )}
                       />
 
@@ -149,7 +180,12 @@ export class SchemaEditorItemCommon<
                         name="default"
                         control={control}
                         render={({field}) => (
-                          <InputBox {...field} disabled={disabled} />
+                          <InputBox
+                            {...field}
+                            disabled={disabled}
+                            placeholder={__(placeholder?.default ?? '')}
+                            useMobileUI={useMobileUI}
+                          />
                         )}
                       />
 
@@ -166,6 +202,7 @@ export class SchemaEditorItemCommon<
             beforeConfirm={this.handleBeforeSubmit}
             onConfirm={this.handlePropsChange}
             title={__('SubForm.editDetail')}
+            popOverContainer={popOverContainer}
           >
             {({onClick}) => (
               <Button

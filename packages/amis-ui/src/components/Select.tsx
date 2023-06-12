@@ -16,7 +16,6 @@ import {PopOver} from 'amis-core';
 import TooltipWrapper from './TooltipWrapper';
 import Downshift, {ControllerStateAndHelpers} from 'downshift';
 import {closeIcon, Icon} from './icons';
-// @ts-ignore
 import {matchSorter} from 'match-sorter';
 import {
   noop,
@@ -41,10 +40,20 @@ import type {Option, Options} from 'amis-core';
 import {RemoteOptionsProps, withRemoteConfig} from './WithRemoteConfig';
 import Picker from './Picker';
 import PopUp from './PopUp';
+import BasePopover, {PopOverOverlay} from './PopOverContainer';
+import SelectMobile from './SelectMobile';
 
 import type {TooltipObject} from '../components/TooltipWrapper';
 
 export {Option, Options};
+
+export const defaultFilterOption = (
+  options: Option[],
+  inputValue: string,
+  option: {keys: string[]}
+): Option[] => matchSorter(options, inputValue, option);
+
+export type FilterOption = typeof defaultFilterOption;
 
 export interface OptionProps {
   className?: string;
@@ -295,7 +304,7 @@ export function normalizeOptions(
 
 const DownshiftChangeTypes = Downshift.stateChangeTypes;
 
-interface SelectProps
+export interface SelectProps
   extends OptionProps,
     ThemeProps,
     LocaleProps,
@@ -339,6 +348,7 @@ interface SelectProps
   popOverContainer?: any;
   popOverContainerSelector?: string;
   overlayPlacement?: string;
+  overlay?: PopOverOverlay;
   onChange: (value: void | string | Option | Array<Option>) => void;
   onFocus?: Function;
   onBlur?: Function;
@@ -373,6 +383,11 @@ interface SelectProps
    * 收纳标签的Popover配置
    */
   overflowTagPopover?: TooltipObject;
+
+  /**
+   * 检索函数
+   */
+  filterOption?: FilterOption;
 }
 
 interface SelectState {
@@ -571,13 +586,15 @@ export class Select extends React.Component<SelectProps, SelectState> {
       simpleValue,
       checkAllBySearch,
       labelField,
-      valueField
+      valueField,
+      filterOption = defaultFilterOption
     } = this.props;
+
     const inputValue = this.state.inputValue;
     let {selection} = this.state;
     let filtedOptions: Array<Option> =
-      inputValue && checkAllBySearch
-        ? matchSorter(options, inputValue, {
+      inputValue && checkAllBySearch !== false
+        ? filterOption(options, inputValue, {
             keys: [labelField || 'label', valueField || 'value']
           })
         : options.concat();
@@ -861,7 +878,9 @@ export class Select extends React.Component<SelectProps, SelectState> {
               })}
             >
               <span className={cx('Select-valueLabel')}>
-                {renderValueLabel ? renderValueLabel(item) : item[labelField || 'label']}
+                {renderValueLabel
+                  ? renderValueLabel(item)
+                  : item[labelField || 'label']}
               </span>
               <span
                 className={cx('Select-valueIcon', {
@@ -887,7 +906,9 @@ export class Select extends React.Component<SelectProps, SelectState> {
             })}
             key={index}
           >
-            {renderValueLabel ? renderValueLabel(item) : item[labelField || 'label']}
+            {renderValueLabel
+              ? renderValueLabel(item)
+              : item[labelField || 'label']}
           </div>
         );
       }
@@ -910,7 +931,9 @@ export class Select extends React.Component<SelectProps, SelectState> {
             })}
           >
             <span className={cx('Select-valueLabel')}>
-              {renderValueLabel ? renderValueLabel(item) : item[labelField || 'label']}
+              {renderValueLabel
+                ? renderValueLabel(item)
+                : item[labelField || 'label']}
             </span>
             <span
               className={cx('Select-valueIcon', {
@@ -964,7 +987,9 @@ export class Select extends React.Component<SelectProps, SelectState> {
       renderMenu,
       mobileClassName,
       virtualThreshold = 100,
-      useMobileUI = false
+      useMobileUI = false,
+      filterOption = defaultFilterOption,
+      overlay
     } = this.props;
     const {selection} = this.state;
 
@@ -972,7 +997,7 @@ export class Select extends React.Component<SelectProps, SelectState> {
     let checkedPartial = false;
     let filtedOptions: Array<Option> = (
       inputValue && isOpen && !loadOptions
-        ? matchSorter(options, inputValue, {
+        ? filterOption(options, inputValue, {
             keys: [labelField || 'label', valueField || 'value']
           })
         : options.concat()
@@ -981,9 +1006,9 @@ export class Select extends React.Component<SelectProps, SelectState> {
       filtedOptions.length && filtedOptions.length > virtualThreshold;
     const selectionValues = selection.map(select => select[valueField]);
     if (multiple && checkAll) {
-      const optionsValues = (checkAllBySearch ? filtedOptions : options).map(
-        option => option[valueField]
-      );
+      const optionsValues = (
+        checkAllBySearch !== false ? filtedOptions : options
+      ).map(option => option[valueField]);
 
       checkedAll = optionsValues.every(
         option => selectionValues.indexOf(option) > -1
@@ -1121,10 +1146,7 @@ export class Select extends React.Component<SelectProps, SelectState> {
     };
 
     const mobileUI = isMobile() && useMobileUI;
-    const column = {
-      labelField: 'label',
-      options: filtedOptions
-    };
+
     const menu = (
       <div
         ref={this.menu}
@@ -1205,27 +1227,44 @@ export class Select extends React.Component<SelectProps, SelectState> {
       </div>
     );
     return mobileUI ? (
-      <PopUp
-        className={cx(`Select-popup`)}
-        container={popOverContainer}
-        isShow={this.state.isOpen}
-        onHide={this.close}
-      >
-        {menu}
-      </PopUp>
+      <SelectMobile
+        {...this.props}
+        highlightedIndex={highlightedIndex}
+        isOpen={isOpen}
+        getItemProps={getItemProps}
+        getInputProps={getInputProps}
+        selectedItem={selectedItem}
+        onChange={selection => {
+          this.setState({
+            isOpen: false
+          });
+          this.props.onChange(selection);
+        }}
+        onClose={this.close}
+      />
     ) : (
       <Overlay
         container={popOverContainer || this.getTarget}
         containerSelector={popOverContainerSelector}
         target={this.getTarget}
-        placement={overlayPlacement}
+        placement={
+          overlayPlacement === 'auto'
+            ? BasePopover.alignToPlacement(overlay)
+            : overlayPlacement
+        }
         show
       >
         <PopOver
           overlay
           className={cx('Select-popover')}
           style={{
-            width: this.target ? this.target.offsetWidth : 'auto'
+            width:
+              (overlay &&
+                BasePopover.calcOverlayWidth(
+                  overlay,
+                  this.target?.offsetWidth
+                )) ||
+              (this.target ? this.target.offsetWidth : 'auto')
           }}
           onHide={this.close}
         >

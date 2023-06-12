@@ -12,7 +12,7 @@ import type {AlertProps} from 'amis-ui/lib/components/Alert2';
 
 /**
  * Alert 提示渲染器。
- * 文档：https://baidu.gitee.io/amis/docs/components/alert
+ * 文档：https://aisuda.bce.baidu.com/amis/zh-CN/components/alert
  */
 export interface AlertSchema extends BaseSchema {
   /**
@@ -33,7 +33,7 @@ export interface AlertSchema extends BaseSchema {
   /**
    * 提示类型
    */
-  level?: 'info' | 'warning' | 'success' | 'error' | 'danger';
+  level?: 'info' | 'warning' | 'success' | 'danger';
 
   /**
    * 是否显示关闭按钮

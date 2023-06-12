@@ -18,7 +18,6 @@ import Avatar from './Avatar';
 import Button from './Button';
 import Breadcrumb from './Breadcrumb';
 import Checkbox from './Checkbox';
-import Checkboxes from './Selection';
 import Collapse from './Collapse';
 import CollapseGroup from './CollapseGroup';
 import DatePicker from './DatePicker';
@@ -70,11 +69,13 @@ import SchemaVariableListPicker from './schema-editor/SchemaVariableListPicker';
 import SchemaVariableList from './schema-editor/SchemaVariableList';
 import VariableList from './formula/VariableList';
 import FormulaPicker from './formula/Picker';
+import {FormulaEditor} from './formula/Editor';
+import type {VariableItem} from './formula/Editor';
 import PickerContainer from './PickerContainer';
 import InputJSONSchema from './json-schema';
 import {Badge, withBadge} from './Badge';
 import type {BadgeObject} from './Badge';
-import {getIcon, Icon, registerIcon} from './icons';
+import {getIcon, getIconNames, Icon, registerIcon} from './icons';
 import {withRemoteConfig} from './WithRemoteConfig';
 import type {RemoteOptionsProps} from './WithRemoteConfig';
 import ConditionBuilder from './condition-builder';
@@ -105,7 +106,7 @@ import Link from './Link';
 import VirtualList, {AutoSizer} from './virtual-list';
 import {withStore} from './WithStore';
 import PopOverContainer from './PopOverContainer';
-import Pagination, {MODE_TYPE} from './Pagination';
+import Pagination from './Pagination';
 import Progress from './Progress';
 import Steps, {StepStatus} from './Steps';
 import Tag from './Tag';
@@ -120,6 +121,10 @@ import InputTable from './InputTable';
 import type {InputTableColumnProps} from './InputTable';
 import ConfirmBox from './ConfirmBox';
 import DndContainer from './DndContainer';
+import Menu from './menu';
+import InputBoxWithSuggestion from './InputBoxWithSuggestion';
+import {CodeMirrorEditor} from './CodeMirror';
+import type CodeMirror from 'codemirror';
 
 export {
   NotFound,
@@ -136,7 +141,7 @@ export {
   Button,
   Breadcrumb,
   Checkbox,
-  Checkboxes,
+  Selection as Checkboxes,
   Collapse,
   CollapseGroup,
   DatePicker,
@@ -178,6 +183,7 @@ export {
   AssociatedSelection,
   ResultBox,
   InputBox,
+  InputBoxWithSuggestion,
   SearchBox,
   ListGroup,
   NumberInput,
@@ -190,6 +196,8 @@ export {
   PickerContainer,
   ConfirmBox,
   FormulaPicker,
+  VariableItem,
+  FormulaEditor,
   InputJSONSchema,
   withBadge,
   BadgeObject,
@@ -215,6 +223,7 @@ export {
   UserSelect,
   UserTabSelect,
   getIcon,
+  getIconNames,
   registerIcon,
   Badge,
   HeadCellDropDown,
@@ -244,5 +253,8 @@ export {
   Combo,
   InputTable,
   InputTableColumnProps,
-  DndContainer
+  DndContainer,
+  Menu,
+  CodeMirror,
+  CodeMirrorEditor
 };

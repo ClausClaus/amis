@@ -11,13 +11,15 @@ import {
   qsstringify,
   cloneObject,
   createObject,
+  extendObject,
   qsparse,
   uuid,
   JSONTraverse
 } from './helper';
 import isPlainObject from 'lodash/isPlainObject';
 import {debug, warning} from './debug';
-import {evaluate, parse} from 'amis-formula';
+import {evaluate} from 'amis-formula';
+import {memoryParse} from './memoryParse';
 
 const rSchema =
   /(?:^|raw\:)(get|post|put|delete|patch|options|head|jsonp|js):/i;
@@ -100,7 +102,7 @@ export function buildApi(
   const raw = (api.url = api.url || '');
   let ast: any = undefined;
   try {
-    ast = parse(api.url);
+    ast = memoryParse(api.url);
   } catch (e) {
     console.warn(`api 配置语法出错：${e}`);
     return api;
@@ -286,15 +288,20 @@ export function buildApi(
     api.method = 'post';
     api.jsonql = dataMapping(
       api.jsonql,
-      {
-        ...api.query,
-        ...data
-      },
+      /** 需要上层数据域的内容 */
+      extendObject(data, {...api.query, ...data}, false),
       undefined,
       false,
       true
     );
-    api.body = api.data = api.jsonql;
+    /** 同时设置了JSONQL和data时走兼容场景 */
+    api.body = api.data =
+      api.data && api.jsonql
+        ? {
+            data: api.data,
+            jsonql: api.jsonql
+          }
+        : api.jsonql;
   }
 
   return api;
@@ -343,7 +350,8 @@ export function responseAdaptor(ret: fetcherResult, api: ApiObject) {
     if (
       ret.headers &&
       contentType.startsWith('text/') &&
-      !contentType.includes('markdown')
+      !contentType.includes('markdown') &&
+      api.responseType !== 'blob'
     ) {
       try {
         data = JSON.parse(data);
@@ -458,7 +466,12 @@ export function wrapFetcher(
       debug('api', 'after requestAdaptor', api);
     }
 
-    if (api.data && (hasFile(api.data) || api.dataType === 'form-data')) {
+    if (
+      api.data &&
+      (api.data instanceof FormData ||
+        hasFile(api.data) ||
+        api.dataType === 'form-data')
+    ) {
       api.data =
         api.data instanceof FormData
           ? api.data
@@ -482,8 +495,7 @@ export function wrapFetcher(
     }
 
     if (!isValidApi(api.url)) {
-      warning('api', 'invalid api url', api);
-      return Promise.resolve();
+      throw new Error(`invalid api url:${api.url}`);
     }
 
     debug('api', 'request api', api);
@@ -673,6 +685,11 @@ export function isApiOutdated(
 ): nextApi is Api {
   if (!nextApi) {
     return false;
+  }
+
+  // 通常是编辑器里加了属性，一开始没值，后来有了
+  if (prevApi === undefined && !nextApi !== undefined) {
+    return true;
   }
 
   nextApi = normalizeApi(nextApi);

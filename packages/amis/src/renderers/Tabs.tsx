@@ -98,7 +98,7 @@ export interface TabSchema extends Omit<BaseSchema, 'type'> {
 
 /**
  * 选项卡控件。
- * 文档：https://baidu.gitee.io/amis/docs/components/tabs
+ * 文档：https://aisuda.bce.baidu.com/amis/zh-CN/components/tabs
  */
 export interface TabsSchema extends BaseSchema {
   type: 'tabs';
@@ -194,9 +194,14 @@ export interface TabsSchema extends BaseSchema {
   addBtnText?: string;
 
   /**
-   * 默认激活的选项卡，hash值或索引值，支持使用表达式
+   * 初始化激活的选项卡，hash值或索引值，支持使用表达式
    */
-  activeKey?: SchemaExpression;
+  defaultKey?: SchemaExpression | number;
+
+  /**
+   * 激活的选项卡，hash值或索引值，支持使用表达式
+   */
+  activeKey?: SchemaExpression | number;
 
   /**
    * 超过多少个时折叠按钮
@@ -207,12 +212,17 @@ export interface TabsSchema extends BaseSchema {
    * 折叠按钮文字
    */
   collapseBtnLabel?: string;
+  /**
+   * 是否滑动切换只在移动端生效
+   */
+  swipeable?: boolean;
 }
 
 export interface TabsProps
   extends RendererProps,
     Omit<TabsSchema, 'className' | 'contentClassName' | 'activeKey'> {
   activeKey?: string | number;
+  defaultKey?: string | number;
   location?: any;
   tabRender?: (tab: TabSchema, props: TabsProps, index: number) => JSX.Element;
 }
@@ -258,8 +268,16 @@ export default class Tabs extends React.Component<TabsProps, TabsState> {
 
       if (tab) {
         activeKey = tab.hash;
+      } else if (props.defaultKey !== undefined) {
+        activeKey =
+          typeof props.defaultKey === 'string'
+            ? resolveVariableAndFilter(props.defaultKey, props.data)
+            : props.defaultKey;
       } else if (props.defaultActiveKey) {
-        activeKey = tokenize(props.defaultActiveKey, props.data);
+        activeKey = resolveVariableAndFilter(
+          props.defaultActiveKey,
+          props.data
+        );
       }
 
       activeKey = activeKey || (tabs[0] && tabs[0].hash) || 0;
@@ -340,8 +358,14 @@ export default class Tabs extends React.Component<TabsProps, TabsState> {
   componentDidUpdate(preProps: TabsProps, prevState: any) {
     const props = this.props;
     let localTabs = this.state.localTabs;
-    const prevActiveKey = tokenize(preProps.defaultActiveKey, preProps.data);
-    const activeKey = tokenize(props.defaultActiveKey, props.data);
+    const prevActiveKey = resolveVariableAndFilter(
+      preProps.defaultActiveKey,
+      preProps.data
+    );
+    const activeKey = resolveVariableAndFilter(
+      props.defaultActiveKey,
+      props.data
+    );
 
     // 响应外部修改 tabs
     const isTabsModified = isObjectShallowModified(
@@ -438,7 +462,8 @@ export default class Tabs extends React.Component<TabsProps, TabsState> {
         newActivedKey = activeKey;
       }
 
-      if (newActivedKey) {
+      // newActivedKey 可以为 0
+      if (newActivedKey !== null) {
         this.setState({
           prevKey: prevActiveKey,
           activeKey: (this.activeKey = newActivedKey)
@@ -619,13 +644,9 @@ export default class Tabs extends React.Component<TabsProps, TabsState> {
 
     const rendererEvent = await dispatchEvent(
       'change',
-      resolveEventData(
-        this.props,
-        {
-          value: tab?.hash ? tab?.hash : key + 1
-        },
-        'value'
-      )
+      resolveEventData(this.props, {
+        value: tab?.hash ? tab?.hash : key + 1
+      })
     );
     if (rendererEvent?.prevented) {
       return;
@@ -731,7 +752,10 @@ export default class Tabs extends React.Component<TabsProps, TabsState> {
       translate: __,
       addBtnText,
       collapseOnExceed,
-      collapseBtnLabel
+      collapseBtnLabel,
+      disabled,
+      useMobileUI,
+      swipeable
     } = this.props;
 
     const mode = tabsMode || dMode;
@@ -753,9 +777,17 @@ export default class Tabs extends React.Component<TabsProps, TabsState> {
           <Tab
             {...(tab as any)}
             title={filter(tab.title, tab.ctx)}
-            disabled={isDisabled(tab, tab.ctx)}
+            disabled={disabled || isDisabled(tab, tab.ctx)}
             key={index}
             eventKey={index}
+            prevKey={index > 0 ? tabs[index - 1]?.hash || index - 1 : 0}
+            nextKey={
+              index < tabs.length - 1
+                ? tabs[index + 1]?.hash || index + 1
+                : tabs.length - 1
+            }
+            swipeable={swipeable}
+            useMobileUI={useMobileUI}
             mountOnEnter={mountOnEnter}
             unmountOnExit={
               typeof tab.reload === 'boolean'
@@ -764,11 +796,13 @@ export default class Tabs extends React.Component<TabsProps, TabsState> {
                 ? tab.unmountOnExit
                 : unmountOnExit
             }
+            onSelect={this.handleSelect}
           >
             {render(
               `item/${index}`,
               (tab as any)?.type ? (tab as any) : tab.tab || tab.body,
               {
+                disabled: disabled,
                 data: tab.ctx,
                 formMode: tab.mode || subFormMode || formMode,
                 formHorizontal:
@@ -784,9 +818,17 @@ export default class Tabs extends React.Component<TabsProps, TabsState> {
           <Tab
             {...(tab as any)}
             title={filter(tab.title, data)}
-            disabled={isDisabled(tab, data)}
+            disabled={disabled || isDisabled(tab, data)}
             key={index}
             eventKey={tab.hash || index}
+            prevKey={index > 0 ? tabs[index - 1]?.hash || index - 1 : 0}
+            nextKey={
+              index < tabs.length - 1
+                ? tabs[index + 1]?.hash || index + 1
+                : tabs.length - 1
+            }
+            swipeable={swipeable}
+            useMobileUI={useMobileUI}
             mountOnEnter={mountOnEnter}
             unmountOnExit={
               typeof tab.reload === 'boolean'
@@ -795,6 +837,7 @@ export default class Tabs extends React.Component<TabsProps, TabsState> {
                 ? tab.unmountOnExit
                 : unmountOnExit
             }
+            onSelect={this.handleSelect}
           >
             {this.renderTab
               ? this.renderTab(tab, this.props, index)
@@ -804,6 +847,7 @@ export default class Tabs extends React.Component<TabsProps, TabsState> {
                   `tab/${index}`,
                   (tab as any)?.type ? (tab as any) : tab.tab || tab.body,
                   {
+                    disabled: disabled,
                     formMode: tab.mode || subFormMode || formMode,
                     formHorizontal:
                       tab.horizontal || subFormHorizontal || formHorizontal
@@ -840,6 +884,7 @@ export default class Tabs extends React.Component<TabsProps, TabsState> {
         sidePosition={sidePosition}
         collapseOnExceed={collapseOnExceed}
         collapseBtnLabel={collapseBtnLabel}
+        useMobileUI={useMobileUI}
       >
         {children}
       </CTabs>
