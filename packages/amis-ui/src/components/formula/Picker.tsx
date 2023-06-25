@@ -479,6 +479,7 @@ export class FormulaPicker extends React.Component<
             showConfirm
             onHide={this.close}
             onConfirm={this.handleEditorConfirm}
+            container={popOverContainer}
           >
             <div className={cx('FormulaPicker-popup-inner')}>
               <Editor
@@ -502,7 +503,7 @@ export class FormulaPicker extends React.Component<
           </PopUp>
         ) : (
           <Modal
-            size="md"
+            size="lg"
             closeOnEsc
             show={this.state.isOpened}
             onHide={this.close}

@@ -19,13 +19,13 @@ export const doc: {
   {
     name: 'IF',
     description:
-      '示例：IF(A, B, C)\n\n如果满足条件A，则返回B，否则返回C，支持多层嵌套IF函数。\n\n也可以用表达式如：A ? B : C',
+      '如果满足条件condition，则返回consequent，否则返回alternate，支持多层嵌套IF函数。\n\n等价于直接用JS表达式如：condition ? consequent : alternate。',
     example: 'IF(condition, consequent, alternate)',
     params: [
       {
         type: 'expression',
         name: 'condition',
-        description: '条件表达式.'
+        description: '条件表达式。例如：语文成绩>80'
       },
       {
         type: 'any',
@@ -47,13 +47,14 @@ export const doc: {
   {
     name: 'AND',
     description:
-      '条件全部符合，返回 true，否则返回 false\n\n示例：AND(语文成绩>80, 数学成绩>80)\n\n语文成绩和数学成绩都大于 80，则返回 true，否则返回 false\n\n也可以直接用表达式如：语文成绩>80 && 数学成绩>80',
+      '条件全部符合，返回 true，否则返回 false。\n\n示例：AND(语文成绩>80, 数学成绩>80)，\n\n语文成绩和数学成绩都大于 80，则返回 true，否则返回 false，\n\n等价于直接用JS表达式如：语文成绩>80 && 数学成绩>80。',
     example: 'AND(expression1, expression2, ...expressionN)',
     params: [
       {
         type: '...expression',
         name: 'conditions',
-        description: '条件表达式.'
+        description:
+          '条件表达式，多个用逗号隔开。例如：语文成绩>80, 数学成绩>80'
       }
     ],
     returns: {
@@ -65,13 +66,14 @@ export const doc: {
   {
     name: 'OR',
     description:
-      '条件任意一个满足条件，返回 true，否则返回 false\n\n示例：OR(语文成绩>80, 数学成绩>80)\n\n语文成绩和数学成绩任意一个大于 80，则返回 true，否则返回 false\n\n也可以直接用表达式如：语文成绩>80 || 数学成绩>80',
+      '条件任意一个满足条件，返回 true，否则返回 false。\n\n示例：OR(语文成绩>80, 数学成绩>80)，\n\n语文成绩和数学成绩任意一个大于 80，则返回 true，否则返回 false，\n\n等价于直接用JS表达式如：语文成绩>80 || 数学成绩>80。',
     example: 'OR(expression1, expression2, ...expressionN)',
     params: [
       {
         type: '...expression',
         name: 'conditions',
-        description: '条件表达式.'
+        description:
+          '条件表达式，多个用逗号隔开。例如：语文成绩>80, 数学成绩>80'
       }
     ],
     returns: {
@@ -82,18 +84,15 @@ export const doc: {
   },
   {
     name: 'XOR',
-    description: '异或处理，多个表达式组中存在奇数个真时认为真。',
-    example: 'XOR(condition1, condition2)',
+    description:
+      '异或处理，多个表达式组中存在奇数个真时认为真。\n\n示例：XOR(语文成绩 > 80, 数学成绩 > 80, 英语成绩 > 80)\n\n三门成绩中有一门或者三门大于 80，则返回 true，否则返回 false。',
+    example: 'XOR(condition1, condition2, ...expressionN)',
     params: [
       {
-        type: 'expression',
-        name: 'condition1',
-        description: '条件表达式1'
-      },
-      {
-        type: 'expression',
-        name: 'condition2',
-        description: '条件表达式2'
+        type: '...expression',
+        name: 'condition',
+        description:
+          '条件表达式，多个用逗号隔开。例如：语文成绩>80, 数学成绩>80'
       }
     ],
     returns: {
@@ -105,14 +104,19 @@ export const doc: {
   {
     name: 'IFS',
     description:
-      '判断函数集合，相当于多个 else if 合并成一个。\n\n示例：IFS(语文成绩 > 80, "优秀", 语文成绩 > 60, "良", "继续努力")\n\n如果语文成绩大于 80，则返回优秀，否则判断大于 60 分，则返回良，否则返回继续努力。',
+      '判断函数集合，相当于多个 else if 合并成一个。\n\n示例：IFS(语文成绩 > 80, "优秀", 语文成绩 > 60, "良", "继续努力")，\n\n如果语文成绩大于 80，则返回优秀，否则判断大于 60 分，则返回良，否则返回继续努力。',
     example:
       'IFS(condition1, result1, condition2, result2,...conditionN, resultN)',
     params: [
       {
+        type: '...expression',
+        name: 'condition',
+        description: '条件表达式'
+      },
+      {
         type: '...any',
-        name: 'args',
-        description: '条件，返回值集合'
+        name: 'result',
+        description: '返回值'
       }
     ],
     returns: {
@@ -123,7 +127,7 @@ export const doc: {
   },
   {
     name: 'ABS',
-    description: '返回传入数字的绝对值',
+    description: '返回传入数字的绝对值。',
     example: 'ABS(num)',
     params: [
       {
@@ -140,7 +144,7 @@ export const doc: {
   },
   {
     name: 'MAX',
-    description: '获取最大值，如果只有一个参数且是数组，则计算这个数组内的值',
+    description: '获取最大值，如果只有一个参数且是数组，则计算这个数组内的值。',
     example: 'MAX(num1, num2, ...numN)',
     params: [
       {
@@ -157,7 +161,7 @@ export const doc: {
   },
   {
     name: 'MIN',
-    description: '获取最小值，如果只有一个参数且是数组，则计算这个数组内的值',
+    description: '获取最小值，如果只有一个参数且是数组，则计算这个数组内的值。',
     example: 'MIN(num1, num2, ...numN)',
     params: [
       {
@@ -174,7 +178,7 @@ export const doc: {
   },
   {
     name: 'SUM',
-    description: '求和，如果只有一个参数且是数组，则计算这个数组内的值',
+    description: '求和，如果只有一个参数且是数组，则计算这个数组内的值。',
     example: 'SUM(num1, num2, ...numN)',
     params: [
       {
@@ -191,7 +195,7 @@ export const doc: {
   },
   {
     name: 'INT',
-    description: '将数值向下取整为最接近的整数',
+    description: '将数值向下取整为最接近的整数。',
     example: 'INT(num)',
     params: [
       {
@@ -208,7 +212,7 @@ export const doc: {
   },
   {
     name: 'MOD',
-    description: '返回两数相除的余数，参数 number 是被除数，divisor 是除数',
+    description: '返回两数相除的余数，参数 number 是被除数，divisor 是除数。',
     example: 'MOD(num, divisor)',
     params: [
       {
@@ -230,7 +234,7 @@ export const doc: {
   },
   {
     name: 'PI',
-    description: '圆周率 3.1415...',
+    description: '圆周率 3.1415...。',
     example: 'PI()',
     params: [],
     returns: {
@@ -252,7 +256,7 @@ export const doc: {
       {
         type: 'number',
         name: 'numDigits',
-        description: '小数位数'
+        description: '小数位数，默认为2'
       }
     ],
     returns: {
@@ -274,7 +278,7 @@ export const doc: {
       {
         type: 'number',
         name: 'numDigits',
-        description: '小数位数'
+        description: '小数位数，默认为2'
       }
     ],
     returns: {
@@ -296,7 +300,7 @@ export const doc: {
       {
         type: 'number',
         name: 'numDigits',
-        description: '小数位数'
+        description: '小数位数，默认为2'
       }
     ],
     returns: {
@@ -325,7 +329,7 @@ export const doc: {
   {
     name: 'AVG',
     description:
-      '返回所有参数的平均值，如果只有一个参数且是数组，则计算这个数组内的值',
+      '返回所有参数的平均值，如果只有一个参数且是数组，则计算这个数组内的值。',
     example: 'AVG(num1, num2, ...numN)',
     params: [
       {
@@ -343,7 +347,7 @@ export const doc: {
   {
     name: 'DEVSQ',
     description:
-      '返回数据点与数据均值点之差（数据偏差）的平方和，如果只有一个参数且是数组，则计算这个数组内的值',
+      '返回数据点与数据均值点之差（数据偏差）的平方和，如果只有一个参数且是数组，则计算这个数组内的值。',
     example: 'DEVSQ(num1, num2, ...numN)',
     params: [
       {
@@ -360,7 +364,7 @@ export const doc: {
   },
   {
     name: 'AVEDEV',
-    description: '数据点到其算术平均值的绝对偏差的平均值',
+    description: '数据点到其算术平均值的绝对偏差的平均值。',
     example: 'AVEDEV(num1, num2, ...numN)',
     params: [
       {
@@ -378,7 +382,7 @@ export const doc: {
   {
     name: 'HARMEAN',
     description:
-      '数据点的调和平均值，如果只有一个参数且是数组，则计算这个数组内的值',
+      '数据点的调和平均值，如果只有一个参数且是数组，则计算这个数组内的值。',
     example: 'HARMEAN(num1, num2, ...numN)',
     params: [
       {
@@ -395,7 +399,7 @@ export const doc: {
   },
   {
     name: 'LARGE',
-    description: '数据集中第 k 个最大值',
+    description: '数据集中第 k 个最大值。',
     example: 'LARGE(array, k)',
     params: [
       {
@@ -417,7 +421,7 @@ export const doc: {
   },
   {
     name: 'UPPERMONEY',
-    description: '将数值转为中文大写金额',
+    description: '将数值转为中文大写金额。',
     example: 'UPPERMONEY(num)',
     params: [
       {
@@ -435,7 +439,7 @@ export const doc: {
   {
     name: 'RAND',
     description:
-      '返回大于等于 0 且小于 1 的均匀分布随机实数。每一次触发计算都会变化。\n\n示例：`RAND()*100`\n\n返回 0-100 之间的随机数',
+      '返回大于等于 0 且小于 1 的均匀分布随机实数。每一次触发计算都会变化。\n\n示例：`RAND()*100`，\n\n返回 0-100 之间的随机数。',
     example: 'RAND()',
     params: [],
     returns: {
@@ -446,7 +450,7 @@ export const doc: {
   },
   {
     name: 'LAST',
-    description: '取数据最后一个',
+    description: '取数据最后一个。',
     example: 'LAST(array)',
     params: [
       {
@@ -507,7 +511,7 @@ export const doc: {
   },
   {
     name: 'LEN',
-    description: '计算文本的长度',
+    description: '计算文本的长度。',
     example: 'LEN(text)',
     params: [
       {
@@ -524,7 +528,7 @@ export const doc: {
   },
   {
     name: 'LENGTH',
-    description: '计算文本集合中所有文本的长度',
+    description: '计算文本集合中所有文本的长度。',
     example: 'LENGTH(textArr)',
     params: [
       {
@@ -541,7 +545,7 @@ export const doc: {
   },
   {
     name: 'ISEMPTY',
-    description: '判断文本是否为空',
+    description: '判断文本是否为空。',
     example: 'ISEMPTY(text)',
     params: [
       {
@@ -558,7 +562,7 @@ export const doc: {
   },
   {
     name: 'CONCATENATE',
-    description: '将多个传入值连接成文本',
+    description: '将多个传入值连接成文本。',
     example: 'CONCATENATE(text1, text2, ...textN)',
     params: [
       {
@@ -576,7 +580,7 @@ export const doc: {
   {
     name: 'CHAR',
     description:
-      '返回计算机字符集的数字代码所对应的字符。\n\n`CHAR(97)` 等价于 "a"',
+      '返回计算机字符集的数字代码所对应的字符。\n\n示例：`CHAR(97)` 等价于 "a"。',
     example: 'CHAR(code)',
     params: [
       {
@@ -593,7 +597,7 @@ export const doc: {
   },
   {
     name: 'LOWER',
-    description: '将传入文本转成小写',
+    description: '将传入文本转成小写。',
     example: 'LOWER(text)',
     params: [
       {
@@ -610,7 +614,7 @@ export const doc: {
   },
   {
     name: 'UPPER',
-    description: '将传入文本转成大写',
+    description: '将传入文本转成大写。',
     example: 'UPPER(text)',
     params: [
       {
@@ -627,7 +631,7 @@ export const doc: {
   },
   {
     name: 'UPPERFIRST',
-    description: '将传入文本首字母转成大写',
+    description: '将传入文本首字母转成大写。',
     example: 'UPPERFIRST(text)',
     params: [
       {
@@ -645,7 +649,7 @@ export const doc: {
   {
     name: 'PADSTART',
     description:
-      '向前补齐文本长度\n\n示例 `PADSTART("6", 2, "0")`\n\n返回 `06`',
+      '向前补齐文本长度。\n\n示例 `PADSTART("6", 2, "0")`，\n\n返回 `06`。',
     example: 'PADSTART(text)',
     params: [
       {
@@ -672,7 +676,8 @@ export const doc: {
   },
   {
     name: 'CAPITALIZE',
-    description: '将文本转成标题\n\n示例 `CAPITALIZE("star")`\n\n返回 `Star`',
+    description:
+      '将文本转成标题。\n\n示例 `CAPITALIZE("star")`，\n\n返回 `Star`。',
     example: 'CAPITALIZE(text)',
     params: [
       {
@@ -690,7 +695,7 @@ export const doc: {
   {
     name: 'ESCAPE',
     description:
-      '对文本进行 HTML 转义\n\n示例 `ESCAPE("<star>&")`\n\n返回 `&lt;start&gt;&amp;`',
+      '对文本进行 HTML 转义。\n\n示例 `ESCAPE("<star>&")`，\n\n返回 `&lt;start&gt;&amp;`。',
     example: 'ESCAPE(text)',
     params: [
       {
@@ -708,7 +713,7 @@ export const doc: {
   {
     name: 'TRUNCATE',
     description:
-      '对文本长度进行截断\n\n示例 `TRUNCATE("amis.baidu.com", 6)`\n\n返回 `amis...`',
+      '对文本长度进行截断。\n\n示例 `TRUNCATE("amis.baidu.com", 6)`，\n\n返回 `amis...`。',
     example: 'TRUNCATE(text, 6)',
     params: [
       {
@@ -730,7 +735,7 @@ export const doc: {
   },
   {
     name: 'BEFORELAST',
-    description: '取在某个分隔符之前的所有字符串',
+    description: '取在某个分隔符之前的所有字符串。',
     example: "BEFORELAST(text, '.')",
     params: [
       {
@@ -753,7 +758,7 @@ export const doc: {
   {
     name: 'SPLIT',
     description:
-      '将文本根据指定片段分割成数组\n\n示例：`SPLIT("a,b,c", ",")`\n\n返回 `["a", "b", "c"]`',
+      '将文本根据指定片段分割成数组。\n\n示例：`SPLIT("a,b,c", ",")`，\n\n返回 `["a", "b", "c"]`。',
     example: "SPLIT(text, ',')",
     params: [
       {
@@ -775,7 +780,7 @@ export const doc: {
   },
   {
     name: 'TRIM',
-    description: '将文本去除前后空格',
+    description: '将文本去除前后空格。',
     example: 'TRIM(text)',
     params: [
       {
@@ -793,7 +798,7 @@ export const doc: {
   {
     name: 'STRIPTAG',
     description:
-      '去除文本中的 HTML 标签\n\n示例：`STRIPTAG("<b>amis</b>")`\n\n返回：`amis`',
+      '去除文本中的 HTML 标签。\n\n示例：`STRIPTAG("<b>amis</b>")`，\n\n返回：`amis`。',
     example: 'STRIPTAG(text)',
     params: [
       {
@@ -811,7 +816,7 @@ export const doc: {
   {
     name: 'LINEBREAK',
     description:
-      '将字符串中的换行转成 HTML `<br>`，用于简单换行的场景\n\n示例：`LINEBREAK("\\n")`\n\n返回：`<br/>`',
+      '将字符串中的换行转成 HTML `<br>`，用于简单换行的场景。\n\n示例：`LINEBREAK("\\n")`，\n\n返回：`<br/>`。',
     example: 'LINEBREAK(text)',
     params: [
       {
@@ -829,7 +834,7 @@ export const doc: {
   {
     name: 'STARTSWITH',
     description:
-      '判断字符串(text)是否以特定字符串(startString)开始，是则返回 True，否则返回 False',
+      '判断字符串(text)是否以特定字符串(startString)开始，是则返回 true，否则返回 false。',
     example: "STARTSWITH(text, '片段')",
     params: [
       {
@@ -852,7 +857,7 @@ export const doc: {
   {
     name: 'ENDSWITH',
     description:
-      '判断字符串(text)是否以特定字符串(endString)结束，是则返回 True，否则返回 False',
+      '判断字符串(text)是否以特定字符串(endString)结束，是则返回 true，否则返回 false。',
     example: "ENDSWITH(text, '片段')",
     params: [
       {
@@ -874,7 +879,8 @@ export const doc: {
   },
   {
     name: 'CONTAINS',
-    description: '判断参数 1 中的文本是否包含参数 2 中的文本。',
+    description:
+      '判断参数 1 中的文本是否包含参数 2 中的文本，是则返回 true，否则返回 false。',
     example: 'CONTAINS(text, searchText)',
     params: [
       {
@@ -923,7 +929,7 @@ export const doc: {
   },
   {
     name: 'SEARCH',
-    description: '对文本进行搜索，返回命中的位置',
+    description: '对文本进行搜索，返回命中的位置。',
     example: 'SEARCH(text, search, 0)',
     params: [
       {
@@ -950,7 +956,7 @@ export const doc: {
   },
   {
     name: 'MID',
-    description: '返回文本字符串中从指定位置开始的特定数目的字符',
+    description: '返回文本字符串中从指定位置开始的特定数目的字符。',
     example: 'MID(text, from, len)',
     params: [
       {
@@ -978,7 +984,7 @@ export const doc: {
   {
     name: 'BASENAME',
     description:
-      '返回路径中的文件名\n\n示例：`/home/amis/a.json`\n\n返回：a.json`',
+      '返回路径中的文件名。\n\n示例：`/home/amis/a.json`，\n\n返回：a.json`。',
     example: 'BASENAME(text)',
     params: [
       {
@@ -996,7 +1002,7 @@ export const doc: {
   {
     name: 'DATE',
     description:
-      '创建日期对象，可以通过特定格式的字符串，或者数值。\n\n需要注意的是，其中月份的数值是从0开始的，也就是说，\n如果是12月份，你应该传入数值11。',
+      '创建日期对象，可以通过特定格式的字符串，或者数值。\n\n需要注意的是，其中月份的数值是从0开始的，\n即如果是12月份，你应该传入数值11。',
     example: "DATE('2021-12-06 08:20:00')",
     params: [],
     returns: {
@@ -1007,8 +1013,8 @@ export const doc: {
   },
   {
     name: 'TIMESTAMP',
-    description: '返回时间的时间戳',
-    example: "TIMESTAMP(date, 'x')",
+    description: '返回时间的时间戳。',
+    example: 'TIMESTAMP(date[, format = "X"])',
     params: [
       {
         type: 'date',
@@ -1029,7 +1035,7 @@ export const doc: {
   },
   {
     name: 'TODAY',
-    description: '返回今天的日期',
+    description: '返回今天的日期。',
     example: 'TODAY()',
     params: [],
     returns: {
@@ -1051,7 +1057,7 @@ export const doc: {
   },
   {
     name: 'WEEKDAY',
-    description: "获取日期的星期几，\n\n示例：\n\nWEEKDAY('2023-02-27') 得到 1",
+    description: "获取日期的星期几。\n\n示例\n\nWEEKDAY('2023-02-27') 得到 1。",
     example: 'WEEKDAY(date)',
     params: [
       {
@@ -1075,7 +1081,7 @@ export const doc: {
   {
     name: 'WEEK',
     description:
-      "获取年份的星期，即第几周\n\n示例：\n\nWEEK('2023-03-05') 得到 10",
+      "获取年份的星期，即第几周。\n\n示例\n\nWEEK('2023-03-05') 得到 10。",
     example: 'WEEK(date)',
     params: [
       {
@@ -1098,7 +1104,7 @@ export const doc: {
   {
     name: 'DATETOSTR',
     description:
-      "对日期、日期字符串、时间戳进行格式化\n\n示例：\n\nDATETOSTR('12/25/2022', 'YYYY-MM-DD') 得到 '2022.12.25'\nDATETOSTR(1676563200, 'YYYY.MM.DD') 得到 '2023.02.17'\nDATETOSTR(1676563200000, 'YYYY.MM.DD hh:mm:ss') 得到 '2023.02.17 12:00:00'\nDATETOSTR(DATE('2021-12-21'), 'YYYY.MM.DD hh:mm:ss') 得到 '2021.12.21 08:00:00'",
+      "对日期、日期字符串、时间戳进行格式化。\n\n示例\n\nDATETOSTR('12/25/2022', 'YYYY-MM-DD') 得到 '2022.12.25'，\nDATETOSTR(1676563200, 'YYYY.MM.DD') 得到 '2023.02.17'，\nDATETOSTR(1676563200000, 'YYYY.MM.DD hh:mm:ss') 得到 '2023.02.17 12:00:00'，\nDATETOSTR(DATE('2021-12-21'), 'YYYY.MM.DD hh:mm:ss') 得到 '2021.12.21 08:00:00'。",
     example: "DATETOSTR(date, 'YYYY-MM-DD')",
     params: [
       {
@@ -1121,7 +1127,7 @@ export const doc: {
   {
     name: 'DATERANGESPLIT',
     description:
-      "获取日期范围字符串中的开始时间、结束时间\n\n示例：\n\nDATERANGESPLIT('1676563200, 1676735999') 得到 [1676563200, 1676735999]\nDATERANGESPLIT('1676563200, 1676735999', undefined , 'YYYY.MM.DD hh:mm:ss') 得到 [2023.02.17 12:00:00, 2023.02.18 11:59:59]\nDATERANGESPLIT('1676563200, 1676735999', 0 , 'YYYY.MM.DD hh:mm:ss') 得到 '2023.02.17 12:00:00'\nDATERANGESPLIT('1676563200, 1676735999', 'start' , 'YYYY.MM.DD hh:mm:ss') 得到 '2023.02.17 12:00:00'\nDATERANGESPLIT('1676563200, 1676735999', 1 , 'YYYY.MM.DD hh:mm:ss') 得到 '2023.02.18 11:59:59'\nDATERANGESPLIT('1676563200, 1676735999', 'end' , 'YYYY.MM.DD hh:mm:ss') 得到 '2023.02.18 11:59:59'",
+      "获取日期范围字符串中的开始时间、结束时间。\n\n示例：\n\nDATERANGESPLIT('1676563200, 1676735999') 得到 [1676563200, 1676735999]，\nDATERANGESPLIT('1676563200, 1676735999', undefined , 'YYYY.MM.DD hh:mm:ss') 得到 [2023.02.17 12:00:00, 2023.02.18 11:59:59]，\nDATERANGESPLIT('1676563200, 1676735999', 0 , 'YYYY.MM.DD hh:mm:ss') 得到 '2023.02.17 12:00:00'，\nDATERANGESPLIT('1676563200, 1676735999', 'start' , 'YYYY.MM.DD hh:mm:ss') 得到 '2023.02.17 12:00:00'，\nDATERANGESPLIT('1676563200, 1676735999', 1 , 'YYYY.MM.DD hh:mm:ss') 得到 '2023.02.18 11:59:59'，\nDATERANGESPLIT('1676563200, 1676735999', 'end' , 'YYYY.MM.DD hh:mm:ss') 得到 '2023.02.18 11:59:59'。",
     example: "DATERANGESPLIT(date, 'YYYY-MM-DD')",
     params: [
       {
@@ -1154,7 +1160,7 @@ export const doc: {
   },
   {
     name: 'STARTOF',
-    description: '返回日期的指定范围的开端',
+    description: '返回日期的指定范围的开端。',
     example: 'STARTOF(date[unit = "day"])',
     params: [
       {
@@ -1181,7 +1187,7 @@ export const doc: {
   },
   {
     name: 'ENDOF',
-    description: '返回日期的指定范围的末尾',
+    description: '返回日期的指定范围的末尾。',
     example: 'ENDOF(date[unit = "day"])',
     params: [
       {
@@ -1208,7 +1214,7 @@ export const doc: {
   },
   {
     name: 'YEAR',
-    description: '返回日期的年份',
+    description: '返回日期的年份。',
     example: 'YEAR(date)',
     params: [
       {
@@ -1242,7 +1248,7 @@ export const doc: {
   },
   {
     name: 'DAY',
-    description: '返回日期的天',
+    description: '返回日期的天。',
     example: 'DAY(date)',
     params: [
       {
@@ -1259,7 +1265,7 @@ export const doc: {
   },
   {
     name: 'HOUR',
-    description: '返回日期的小时',
+    description: '返回日期的小时。',
     example: 'HOUR(date)',
     params: [
       {
@@ -1276,7 +1282,7 @@ export const doc: {
   },
   {
     name: 'MINUTE',
-    description: '返回日期的分',
+    description: '返回日期的分。',
     example: 'MINUTE(date)',
     params: [
       {
@@ -1293,7 +1299,7 @@ export const doc: {
   },
   {
     name: 'SECOND',
-    description: '返回日期的秒',
+    description: '返回日期的秒。',
     example: 'SECOND(date)',
     params: [
       {
@@ -1310,7 +1316,7 @@ export const doc: {
   },
   {
     name: 'YEARS',
-    description: '返回两个日期相差多少年',
+    description: '返回两个日期相差多少年。',
     example: 'YEARS(endDate, startDate)',
     params: [
       {
@@ -1332,7 +1338,7 @@ export const doc: {
   },
   {
     name: 'MINUTES',
-    description: '返回两个日期相差多少分钟',
+    description: '返回两个日期相差多少分钟。',
     example: 'MINUTES(endDate, startDate)',
     params: [
       {
@@ -1354,7 +1360,7 @@ export const doc: {
   },
   {
     name: 'DAYS',
-    description: '返回两个日期相差多少天',
+    description: '返回两个日期相差多少天。',
     example: 'DAYS(endDate, startDate)',
     params: [
       {
@@ -1376,7 +1382,7 @@ export const doc: {
   },
   {
     name: 'HOURS',
-    description: '返回两个日期相差多少小时',
+    description: '返回两个日期相差多少小时。',
     example: 'HOURS(endDate, startDate)',
     params: [
       {
@@ -1399,7 +1405,7 @@ export const doc: {
   {
     name: 'DATEMODIFY',
     description:
-      "修改日期，对日期进行加减天、月份、年等操作\n\n示例：\n\nDATEMODIFY(A, -2, 'month')\n\n对日期 A 进行往前减2月的操作。",
+      "修改日期，对日期进行加减天、月份、年等操作。\n\n示例：\n\nDATEMODIFY(A, -2, 'month')，\n\n对日期 A 进行往前减2月的操作。",
     example: "DATEMODIFY(date, 2, 'days')",
     params: [
       {
@@ -1449,7 +1455,8 @@ export const doc: {
   },
   {
     name: 'ISBEFORE',
-    description: '判断两个日期，是否第一个日期在第二个日期的前面',
+    description:
+      '判断两个日期，是否第一个日期在第二个日期的前面，是则返回 true，否则返回 false。',
     example: 'ISBEFORE(a, b)',
     params: [
       {
@@ -1476,7 +1483,8 @@ export const doc: {
   },
   {
     name: 'ISAFTER',
-    description: '判断两个日期，是否第一个日期在第二个日期的后面',
+    description:
+      '判断两个日期，是否第一个日期在第二个日期的后面，是则返回 true，否则返回 false。',
     example: 'ISAFTER(a, b)',
     params: [
       {
@@ -1504,7 +1512,7 @@ export const doc: {
   {
     name: 'BETWEENRANGE',
     description:
-      "判断日期是否在指定范围内\n\n示例：BETWEENRANGE('2021/12/6', ['2021/12/5','2021/12/7'])",
+      "判断日期是否在指定范围内，是则返回 true，否则返回 false。\n\n示例：BETWEENRANGE('2021/12/6', ['2021/12/5','2021/12/7'])。",
     example: 'BETWEENRANGE(date, [start, end])',
     params: [
       {
@@ -1537,7 +1545,8 @@ export const doc: {
   },
   {
     name: 'ISSAMEORBEFORE',
-    description: '判断两个日期，是否第一个日期在第二个日期的前面或者相等',
+    description:
+      '判断两个日期，是否第一个日期在第二个日期的前面或者相等，是则返回 true，否则返回 false。',
     example: 'ISSAMEORBEFORE(a, b)',
     params: [
       {
@@ -1564,7 +1573,8 @@ export const doc: {
   },
   {
     name: 'ISSAMEORAFTER',
-    description: '判断两个日期，是否第一个日期在第二个日期的后面或者相等',
+    description:
+      '判断两个日期，是否第一个日期在第二个日期的后面或者相等，是则返回 true，否则返回 false。',
     example: 'ISSAMEORAFTER(a, b)',
     params: [
       {
@@ -1591,7 +1601,7 @@ export const doc: {
   },
   {
     name: 'COUNT',
-    description: '返回数组的长度',
+    description: '返回数组的长度。',
     example: 'COUNT(arr)',
     params: [
       {
@@ -1655,7 +1665,7 @@ export const doc: {
   {
     name: 'ARRAYFINDINDEX',
     description:
-      '数据做数据查找，需要搭配箭头函数一起使用，注意箭头函数只支持单表达式用法。\n找出第二个箭头函数返回为 true 的成员的索引。\n\n示例：\n\nARRAYFINDINDEX([0, 2, false], item => item === 2) 得到 1',
+      '数据做数据查找，需要搭配箭头函数一起使用，注意箭头函数只支持单表达式用法。\n找出第二个箭头函数返回为 true 的成员的索引。\n\n示例：\n\nARRAYFINDINDEX([0, 2, false], item => item === 2) 得到 1。',
     example: 'ARRAYFINDINDEX(arr, item => item === 2)',
     params: [
       {
@@ -1678,7 +1688,7 @@ export const doc: {
   {
     name: 'ARRAYFIND',
     description:
-      '数据做数据查找，需要搭配箭头函数一起使用，注意箭头函数只支持单表达式用法。\n找出第二个箭头函数返回为 true 的成员。\n\n示例：\n\nARRAYFIND([0, 2, false], item => item === 2) 得到 2',
+      '数据做数据查找，需要搭配箭头函数一起使用，注意箭头函数只支持单表达式用法。\n找出第二个箭头函数返回为 true 的成员。\n\n示例：\n\nARRAYFIND([0, 2, false], item => item === 2) 得到 2。',
     example: 'ARRAYFIND(arr, item => item === 2)',
     params: [
       {
@@ -1701,7 +1711,7 @@ export const doc: {
   {
     name: 'ARRAYSOME',
     description:
-      '数据做数据遍历判断，需要搭配箭头函数一起使用，注意箭头函数只支持单表达式用法。\n判断第二个箭头函数是否存在返回为 true 的成员。\n\n示例：\n\nARRAYSOME([0, 2, false], item => item === 2) 得到 true',
+      '数据做数据遍历判断，需要搭配箭头函数一起使用，注意箭头函数只支持单表达式用法。\n判断第二个箭头函数是否存在返回为 true 的成员，是则返回 true，否则返回 false。\n\n示例：\n\nARRAYSOME([0, 2, false], item => item === 2) 得到 true。',
     example: 'ARRAYSOME(arr, item => item === 2)',
     params: [
       {
@@ -1724,7 +1734,7 @@ export const doc: {
   {
     name: 'ARRAYEVERY',
     description:
-      '数据做数据遍历判断，需要搭配箭头函数一起使用，注意箭头函数只支持单表达式用法。\n判断第二个箭头函数返回是否都为 true。\n\n示例：\n\nARRAYEVERY([0, 2, false], item => item === 2) 得到 false',
+      '数据做数据遍历判断，需要搭配箭头函数一起使用，注意箭头函数只支持单表达式用法。\n判断第二个箭头函数返回是否都为 true，是则返回 true，否则返回 false。\n\n示例：\n\nARRAYEVERY([0, 2, false], item => item === 2) 得到 false',
     example: 'ARRAYEVERY(arr, item => item === 2)',
     params: [
       {
@@ -1747,7 +1757,7 @@ export const doc: {
   {
     name: 'ARRAYINCLUDES',
     description:
-      '判断数据中是否存在指定元素\n\n示例：\n\nARRAYINCLUDES([0, 2, false], 2) 得到 true',
+      '判断数据中是否存在指定元素。\n\n示例：\n\nARRAYINCLUDES([0, 2, false], 2) 得到 true。',
     example: 'ARRAYINCLUDES(arr, 2)',
     params: [
       {
@@ -1770,7 +1780,7 @@ export const doc: {
   {
     name: 'COMPACT',
     description:
-      '数组过滤掉 false、null、0 和 ""\n\n示例：\n\nCOMPACT([0, 1, false, 2, \'\', 3]) 得到 [1, 2, 3]',
+      '数组过滤掉 false、null、0 和 ""。\n\n示例：\n\nCOMPACT([0, 1, false, 2, \'\', 3]) 得到 [1, 2, 3]。',
     example: 'COMPACT(arr)',
     params: [
       {
@@ -1788,7 +1798,7 @@ export const doc: {
   {
     name: 'JOIN',
     description:
-      "数组转成字符串\n\n示例：\n\nJOIN(['a', 'b', 'c'], '=') 得到 'a=b=c'",
+      "数组转成字符串。\n\n示例：\n\nJOIN(['a', 'b', 'c'], '=') 得到 'a=b=c'。",
     example: 'JOIN(arr, string)',
     params: [
       {
@@ -1811,7 +1821,7 @@ export const doc: {
   {
     name: 'CONCAT',
     description:
-      "数组合并\n\n示例：\n\nCONCAT(['a', 'b', 'c'], ['1'], ['3']) 得到 ['a', 'b', 'c', '1', '3']",
+      "数组合并。\n\n示例：\n\nCONCAT(['a', 'b', 'c'], ['1'], ['3']) 得到 ['a', 'b', 'c', '1', '3']。",
     example: "CONCAT(['a', 'b', 'c'], ['1'], ['3'])",
     params: [
       {
@@ -1829,7 +1839,7 @@ export const doc: {
   {
     name: 'UNIQ',
     description:
-      "数组去重，第二个参数「field」，可指定根据该字段去重\n\n示例：\n\nUNIQ([{a: '1'}, {b: '2'}, {a: '1'}]， 'id')",
+      "数组去重，第二个参数「field」，可指定根据该字段去重。\n\n示例：\n\nUNIQ([{a: '1'}, {b: '2'}, {a: '1'}]， 'id')。",
     example: "UNIQ([{a: '1'}, {b: '2'}, {a: '1'}], 'x')",
     params: [
       {
@@ -1852,7 +1862,7 @@ export const doc: {
   {
     name: 'ENCODEJSON',
     description:
-      '将JS对象转换成JSON字符串\n\n示例：\n\nENCODEJSON({name: \'amis\'}) 得到 \'{"name":"amis"}\'',
+      '将JS对象转换成JSON字符串。\n\n示例：\n\nENCODEJSON({name: \'amis\'}) 得到 \'{"name":"amis"}\'。',
     example: "ENCODEJSON({name: 'amis'})",
     params: [
       {
@@ -1870,7 +1880,7 @@ export const doc: {
   {
     name: 'DECODEJSON',
     description:
-      '解析JSON编码数据，返回JS对象\n\n示例：\n\nDECODEJSON(\'{\\"name\\": "amis"}\') 得到 {name: \'amis\'}',
+      '解析JSON编码数据，返回JS对象。\n\n示例：\n\nDECODEJSON(\'{\\"name\\": "amis"}\') 得到 {name: \'amis\'}。',
     example: 'DECODEJSON(\'{\\"name\\": "amis"}\')',
     params: [
       {
@@ -1888,7 +1898,7 @@ export const doc: {
   {
     name: 'GET',
     description:
-      "根据对象或者数组的path路径获取值。 如果解析 value 是 undefined 会以 defaultValue 取代\n\n示例：\n\nGET([0, 2, {name: 'amis', age: 18}], 1) 得到 2\nGET([0, 2, {name: 'amis', age: 18}], '2.name') 得到 'amis'\nGET({arr: [{name: 'amis', age: 18}]}, 'arr[0].name') 得到 'amis'\nGET({arr: [{name: 'amis', age: 18}]}, 'arr.0.name') 得到 'amis'\nGET({arr: [{name: 'amis', age: 18}]}, 'arr.1.name', 'not-found') 得到 'not-found'",
+      "根据对象或者数组的path路径获取值。 如果解析 value 是 undefined 会以 defaultValue 取代。\n\n示例：\n\nGET([0, 2, {name: 'amis', age: 18}], 1) 得到 2，\nGET([0, 2, {name: 'amis', age: 18}], '2.name') 得到 'amis'，\nGET({arr: [{name: 'amis', age: 18}]}, 'arr[0].name') 得到 'amis'，\nGET({arr: [{name: 'amis', age: 18}]}, 'arr.0.name') 得到 'amis'，\nGET({arr: [{name: 'amis', age: 18}]}, 'arr.1.name', 'not-found') 得到 'not-found'。",
     example: 'GET(arr, 2)',
     params: [
       {

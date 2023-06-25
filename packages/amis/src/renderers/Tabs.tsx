@@ -19,7 +19,8 @@ import {
   SchemaClassName,
   SchemaCollection,
   SchemaIcon,
-  SchemaExpression
+  SchemaExpression,
+  SchemaObject
 } from '../Schema';
 import {ActionSchema} from './Action';
 import {filter} from 'amis-core';
@@ -33,7 +34,7 @@ export interface TabSchema extends Omit<BaseSchema, 'type'> {
   /**
    * Tab 标题
    */
-  title?: string;
+  title?: string | SchemaObject;
 
   /**
    * 内容
@@ -228,7 +229,7 @@ export interface TabsProps
 }
 
 interface TabSource extends TabSchema {
-  ctx?: any;
+  data?: any;
 }
 
 export interface TabsState {
@@ -303,7 +304,6 @@ export default class Tabs extends React.Component<TabsProps, TabsState> {
     if (!tabs) {
       return [[], false];
     }
-
     const arr = resolveVariableAndFilter(source, data, '| raw');
     if (!Array.isArray(arr)) {
       return [tabs, false];
@@ -312,13 +312,8 @@ export default class Tabs extends React.Component<TabsProps, TabsState> {
     tabs = Array.isArray(tabs) ? tabs : [tabs];
 
     const sourceTabs: Array<TabSource> = [];
-    arr.forEach((value, index) => {
-      const ctx = createObject(
-        data,
-        isObject(value) ? {index, ...value} : {item: value, index}
-      );
-
-      sourceTabs.push(...tabs.map((tab: TabSource) => ({...tab, ctx})));
+    arr.forEach(value => {
+      sourceTabs.push(...tabs.map((tab: TabSource) => ({...tab, data: value})));
     });
 
     return [sourceTabs, true];
@@ -712,6 +707,18 @@ export default class Tabs extends React.Component<TabsProps, TabsState> {
       : -1;
   }
 
+  // 渲染tabs的title
+  renderTabTitle(
+    title: string | SchemaObject | undefined,
+    index: number,
+    data: any
+  ) {
+    const {render} = this.props;
+    return typeof title === 'string' || !title
+      ? filter(title, data)
+      : render(`tab-title/${index}`, title, {...data, index});
+  }
+
   renderToolbar() {
     const {toolbar, render, classnames: cx, toolbarClassName} = this.props;
 
@@ -772,14 +779,18 @@ export default class Tabs extends React.Component<TabsProps, TabsState> {
 
     // 是否从 source 数据中生成
     if (isFromSource) {
-      children = tabs.map((tab: TabSource, index: number) =>
-        isVisible(tab, tab.ctx) ? (
+      children = tabs.map((tab: TabSource, index: number) => {
+        const ctx = createObject(
+          data,
+          isObject(tab.data) ? {index, ...tab.data} : {item: tab.data, index}
+        );
+        return isVisible(tab, ctx) ? (
           <Tab
             {...(tab as any)}
-            title={filter(tab.title, tab.ctx)}
-            disabled={disabled || isDisabled(tab, tab.ctx)}
+            title={this.renderTabTitle(tab.title, index, ctx)}
+            disabled={disabled || isDisabled(tab, ctx)}
             key={index}
-            eventKey={index}
+            eventKey={filter(tab.hash, ctx) || index}
             prevKey={index > 0 ? tabs[index - 1]?.hash || index - 1 : 0}
             nextKey={
               index < tabs.length - 1
@@ -803,21 +814,21 @@ export default class Tabs extends React.Component<TabsProps, TabsState> {
               (tab as any)?.type ? (tab as any) : tab.tab || tab.body,
               {
                 disabled: disabled,
-                data: tab.ctx,
+                data: ctx,
                 formMode: tab.mode || subFormMode || formMode,
                 formHorizontal:
                   tab.horizontal || subFormHorizontal || formHorizontal
               }
             )}
           </Tab>
-        ) : null
-      );
+        ) : null;
+      });
     } else {
       children = tabs.map((tab, index) =>
         isVisible(tab, data) ? (
           <Tab
             {...(tab as any)}
-            title={filter(tab.title, data)}
+            title={this.renderTabTitle(tab.title, index, data)}
             disabled={disabled || isDisabled(tab, data)}
             key={index}
             eventKey={tab.hash || index}
